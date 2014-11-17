@@ -1,0 +1,4 @@
+(defn something [v] (let [[a b] v] (+ a b)))
+(something [1 2])
+---
+3

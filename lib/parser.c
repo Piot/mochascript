@@ -312,7 +312,16 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 			o = parse_string(self, error);
 			break;
 		default:
-			if (is_numerical(first_char)) {
+			if (first_char == '-') {
+				mocha_char ch = read_char(self);
+				unread_char(self, ch);
+				unread_char(self, first_char);
+				if (is_numerical(ch)) {
+					o = parse_number(self, error);
+				} else {
+					o = parse_symbol(self, error);
+				}
+			} else if (is_numerical(first_char)) {
 				unread_char(self, first_char);
 				o = parse_number(self, error);
 			} else if (is_alpha(first_char)) {

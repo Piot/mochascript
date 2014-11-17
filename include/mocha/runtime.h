@@ -21,6 +21,7 @@ void mocha_runtime_pop_context(mocha_runtime* self);
 void mocha_runtime_push_context(mocha_runtime* self, mocha_context* context);
 
 const struct mocha_object*  mocha_runtime_eval(mocha_runtime* self, const struct mocha_object* o, struct mocha_error* error);
+const struct mocha_object* mocha_runtime_eval_symbols(mocha_runtime* self, const struct mocha_object* o, struct mocha_error* error);
 
 const struct mocha_object* mocha_runtime_create_boolean(mocha_runtime* self, mocha_boolean value);
 

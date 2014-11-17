@@ -1,0 +1,4 @@
+(defmacro unless [pred a b] `(if (not ~pred) ~a ~b))
+(unless false (dec 3) (inc 4))
+---
+2

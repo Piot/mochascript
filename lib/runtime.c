@@ -307,6 +307,39 @@ MOCHA_FUNCTION(dec_func)
 	return r;
 }
 
+MOCHA_FUNCTION(thread_first_func)
+{
+	const mocha_object* argument = arguments->objects[1];
+	const mocha_object* result[128];
+	for (size_t c = 1; c < arguments->count; ++c) {
+		const mocha_object* v = arguments->objects[c];
+	}
+	return 0;
+}
+
+MOCHA_FUNCTION(inc_func)
+{
+	mocha_number v;
+
+	const mocha_object* argument = arguments->objects[1];
+	if (argument->type == mocha_object_type_number) {
+		switch (argument->data.number.type) {
+			case mocha_number_type_integer:
+				v.type = mocha_number_type_integer;
+				v.data.i = argument->data.number.data.i + 1;
+				break;
+			case mocha_number_type_float:
+				v.type = mocha_number_type_float;
+				v.data.f = argument->data.number.data.f + 1.0f;
+				break;
+		}
+	}
+
+	const mocha_object* r = mocha_values_create_number(runtime->values, v);
+
+	return r;
+}
+
 MOCHA_FUNCTION(sub_func)
 {
 	mocha_number v;
@@ -423,8 +456,15 @@ MOCHA_FUNCTION(and_func)
 MOCHA_FUNCTION(assoc_func)
 {
 	const mocha_object* map_object = arguments->objects[1];
-	const mocha_object* key = arguments->objects[2];
-	const mocha_object* value = arguments->objects[3];
+	const mocha_object* key = 0;
+	const mocha_object* value = 0;
+
+	if (arguments->count > 1) {
+		key = arguments->objects[2];
+	}
+	if (arguments->count > 2) {
+		value = arguments->objects[3];
+	}
 	const mocha_map* map = &map_object->data.map;
 
 	const mocha_object* result[128];
@@ -433,7 +473,7 @@ MOCHA_FUNCTION(assoc_func)
 	size_t total_count = map->count + 2;
 	size_t overwrite_index = map->count;
 	for (size_t i = 0; i<map->count; i+= 2) {
-		if (mocha_object_equal(map->objects[i], key)) {
+		if (key && mocha_object_equal(map->objects[i], key)) {
 			total_count = map->count;
 			overwrite_index = i;
 			break;
@@ -450,12 +490,12 @@ MOCHA_FUNCTION(assoc_func)
 MOCHA_FUNCTION(dissoc_func)
 {
 	const mocha_object* map_object = arguments->objects[1];
-	const mocha_object* key = arguments->objects[2];
+	const mocha_object* key = 0;
 	const mocha_map* map = &map_object->data.map;
-	if (map->count == 0 || arguments->count == 1) {
+	if (map->count == 0 || arguments->count < 3) {
 		return map_object;
 	}
-
+	key = arguments->objects[2];
 	const mocha_object* result[128];
 
 	size_t total_count = map->count;
@@ -689,7 +729,10 @@ MOCHA_FUNCTION(quote_func)
 MOCHA_FUNCTION(unquote_func)
 {
 	mocha_error error;
-	return mocha_runtime_eval(runtime, arguments->objects[1], &error);
+
+	// MOCHA_LOG("Unquoting:");
+	// mocha_print_object_debug(arguments->objects[1]);
+	return mocha_runtime_eval_symbols(runtime, arguments->objects[1], &error);
 }
 
 MOCHA_FUNCTION(zero_func)
@@ -817,6 +860,8 @@ static void bootstrap_context(mocha_runtime* self, mocha_values* values)
 	MOCHA_DEF_FUNCTION_EX(add, "+", mocha_true);
 	MOCHA_DEF_FUNCTION_EX(sub, "-", mocha_true);
 	MOCHA_DEF_FUNCTION_EX(dec, "dec", mocha_true);
+	MOCHA_DEF_FUNCTION_EX(inc, "inc", mocha_true);
+	MOCHA_DEF_FUNCTION_EX(thread_first, "->", mocha_true);
 	MOCHA_DEF_FUNCTION_EX(div, "/", mocha_true);
 	MOCHA_DEF_FUNCTION(and, mocha_true);
 	MOCHA_DEF_FUNCTION_EX(equal, "=", mocha_true);
@@ -907,7 +952,10 @@ void mocha_runtime_pop_context(mocha_runtime* self)
 }
 
 
-const struct mocha_object* mocha_runtime_eval(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
+
+
+
+const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const struct mocha_object* o, mocha_error* error, mocha_boolean eval_symbols)
 {
 	if (o->type == mocha_object_type_list) {
 		const mocha_list* l = &o->data.list;
@@ -947,8 +995,21 @@ const struct mocha_object* mocha_runtime_eval(mocha_runtime* self, const struct 
 	} else {
 		if (o->type == mocha_object_type_symbol) {
 			o = mocha_context_lookup(self->context, o);
+			if (eval_symbols && o) {
+				o = mocha_runtime_eval(self, o, error);
+			}
 		}
 	}
 
 	return o;
+}
+
+const struct mocha_object* mocha_runtime_eval(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
+{
+	return mocha_runtime_eval_ex(self, o, error, mocha_false);
+}
+
+const struct mocha_object* mocha_runtime_eval_symbols(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
+{
+	return mocha_runtime_eval_ex(self, o, error, mocha_true);
 }
