@@ -435,6 +435,25 @@ MOCHA_FUNCTION(case_func)
 	return mocha_values_create_nil(runtime->values);
 }
 
+
+MOCHA_FUNCTION(or_func)
+{
+	if (arguments->count == 1) {
+		return mocha_values_create_nil(runtime->values);
+	}
+
+	size_t last_index = arguments->count - 1;
+	for (size_t i=1; i < arguments->count; ++i) {
+		const mocha_object* a = arguments->objects[i];
+		if (mocha_object_truthy(a)) {
+			last_index = i;
+			break;
+		}
+	}
+
+	return arguments->objects[last_index];
+}
+
 MOCHA_FUNCTION(and_func)
 {
 	if (arguments->count == 1) {
@@ -864,6 +883,7 @@ static void bootstrap_context(mocha_runtime* self, mocha_values* values)
 	MOCHA_DEF_FUNCTION_EX(thread_first, "->", mocha_true);
 	MOCHA_DEF_FUNCTION_EX(div, "/", mocha_true);
 	MOCHA_DEF_FUNCTION(and, mocha_true);
+	MOCHA_DEF_FUNCTION(or, mocha_true);
 	MOCHA_DEF_FUNCTION_EX(equal, "=", mocha_true);
 	MOCHA_DEF_FUNCTION_EX(less_or_equal, "<=", mocha_true);
 	MOCHA_DEF_FUNCTION_EX(empty, "empty?", mocha_true);
