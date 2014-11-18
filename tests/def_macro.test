@@ -1,4 +1,4 @@
 (defmacro unless [pred a b] `(if (not ~pred) ~a ~b))
-(unless false "it is ok" "did not work")
+(unless false "it is ok" (fail "did not work"))
 ---
 "it is ok"
