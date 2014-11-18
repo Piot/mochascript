@@ -1,11 +1,11 @@
 #include <mocha/error.h>
 #include <mocha/log.h>
 
-static const char* error_string(mocha_error_code code)
+static const char* error_string(const mocha_error* error, char* buffer)
 {
 	const char* s;
 
-	switch (code) {
+	switch (error->code) {
 		case mocha_error_code_unexpected_end:
 			s = "Unexpected end";
 			break;
@@ -24,6 +24,10 @@ static const char* error_string(mocha_error_code code)
 		case mocha_error_code_file_not_found:
 			s = "File not found";
 			break;
+		case mocha_error_code_fail:
+			sprintf(buffer, "Failed: %s", error->string);
+			s = buffer;
+			break;
 	}
 
 	return s;
@@ -31,7 +35,8 @@ static const char* error_string(mocha_error_code code)
 
 void mocha_error_show(mocha_error* self)
 {
-	MOCHA_LOG("Error %d '%s'", self->code, error_string(self->code));
+	char buffer[512];
+	MOCHA_LOG("Error %d '%s'", self->code, error_string(self, buffer));
 }
 
 void mocha_error_init(mocha_error* self)

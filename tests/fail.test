@@ -1,0 +1,5 @@
+(fail "You failed!")
+---
+nil 
+
+Error 6 'Failed: You failed!'

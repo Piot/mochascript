@@ -2,6 +2,7 @@
 #define mocha_runtime_h
 
 #include <mocha/context.h>
+#include <mocha/error.h>
 
 struct mocha_object;
 struct mocha_error;
@@ -13,6 +14,7 @@ typedef struct mocha_runtime {
 	int stack_depth;
 	const struct mocha_object* nil;
 	struct mocha_values* values;
+    struct mocha_error error;
 } mocha_runtime;
 
 void mocha_runtime_init(mocha_runtime* self);

@@ -10,7 +10,8 @@ typedef enum mocha_error_code {
 	mocha_error_code_symbol_too_long,
 	mocha_error_code_missing_end_of_string,
 	mocha_error_code_unexpected_character,
-	mocha_error_code_file_not_found
+	mocha_error_code_file_not_found,
+	mocha_error_code_fail
 } mocha_error_code;
 
 typedef struct mocha_error {

@@ -83,8 +83,7 @@ MOCHA_FUNCTION(fn_func)
 
 static const mocha_object* def(mocha_runtime* runtime, mocha_context* context, const mocha_object* name, const mocha_object* body)
 {
-	mocha_error error;
-	const mocha_object* eval = mocha_runtime_eval(runtime, body, &error);
+	const mocha_object* eval = mocha_runtime_eval(runtime, body, &runtime->error);
 	mocha_context_add(context, name, eval);
 	return eval;
 }
@@ -120,8 +119,7 @@ MOCHA_FUNCTION(defn_func)
 
 MOCHA_FUNCTION(if_func)
 {
-	mocha_error error;
-	const mocha_object* condition = mocha_runtime_eval(runtime, arguments->objects[1], &error);
+	const mocha_object* condition = mocha_runtime_eval(runtime, arguments->objects[1], &runtime->error);
 	if (condition->type != mocha_object_type_boolean) {
 		MOCHA_LOG("Illegal condition type");
 		return condition;
@@ -132,7 +130,7 @@ MOCHA_FUNCTION(if_func)
 		const mocha_object* r = mocha_values_create_nil(runtime->values);
 		return r;
 	}
-	const mocha_object* result = mocha_runtime_eval(runtime, arguments->objects[eval_index], &error);
+	const mocha_object* result = mocha_runtime_eval(runtime, arguments->objects[eval_index], &runtime->error);
 
 	return result;
 }
@@ -150,8 +148,7 @@ MOCHA_FUNCTION(get_func)
 
 MOCHA_FUNCTION(let_func)
 {
-	mocha_error error;
-	const mocha_object* assignments = mocha_runtime_eval(runtime, arguments->objects[1], &error);
+	const mocha_object* assignments = mocha_runtime_eval(runtime, arguments->objects[1], &runtime->error);
 	if (!assignments || assignments->type != mocha_object_type_vector) {
 		MOCHA_LOG("must have vector in let!");
 		return 0;
@@ -170,14 +167,14 @@ MOCHA_FUNCTION(let_func)
 			MOCHA_LOG("must have symbol in let");
 		}
 		const mocha_object* value = assignment_vector->objects[i+1];
-		const mocha_object* evaluated_value = mocha_runtime_eval(runtime, value, &error);
+		const mocha_object* evaluated_value = mocha_runtime_eval(runtime, value, &runtime->error);
 
 		mocha_context_add(new_context, symbol, evaluated_value);
 	}
 
 	// mocha_context_print_debug("let context", new_context);
 	mocha_runtime_push_context(runtime, new_context);
-	const mocha_object* result = mocha_runtime_eval(runtime, arguments->objects[2], &error);
+	const mocha_object* result = mocha_runtime_eval(runtime, arguments->objects[2], &runtime->error);
 	mocha_runtime_pop_context(runtime);
 
 	return result;
@@ -417,18 +414,17 @@ MOCHA_FUNCTION(less_or_equal_func)
 
 MOCHA_FUNCTION(case_func)
 {
-	mocha_error error;
-	const mocha_object* compare_value = mocha_runtime_eval(runtime, arguments->objects[1], &error);
+	const mocha_object* compare_value = mocha_runtime_eval(runtime, arguments->objects[1], &runtime->error);
 	for (size_t i = 2; i < arguments->count; i += 2) {
 		const mocha_object* when_value = arguments->objects[i];
 		if (mocha_object_equal(compare_value, when_value)) {
-			const mocha_object* when_argument = mocha_runtime_eval(runtime, arguments->objects[i+1], &error);
+			const mocha_object* when_argument = mocha_runtime_eval(runtime, arguments->objects[i+1], &runtime->error);
 			return when_argument;
 		}
 	}
 
 	if ((arguments->count % 2) != 0) {
-		const mocha_object* default_value = mocha_runtime_eval(runtime, arguments->objects[arguments->count-1], &error);
+		const mocha_object* default_value = mocha_runtime_eval(runtime, arguments->objects[arguments->count-1], &runtime->error);
 		return default_value;
 	}
 
@@ -747,11 +743,9 @@ MOCHA_FUNCTION(quote_func)
 
 MOCHA_FUNCTION(unquote_func)
 {
-	mocha_error error;
-
 	// MOCHA_LOG("Unquoting:");
 	// mocha_print_object_debug(arguments->objects[1]);
-	return mocha_runtime_eval_symbols(runtime, arguments->objects[1], &error);
+	return mocha_runtime_eval_symbols(runtime, arguments->objects[1], &runtime->error);
 }
 
 MOCHA_FUNCTION(zero_func)
@@ -808,6 +802,18 @@ MOCHA_FUNCTION(count_func)
 
 	const mocha_object* o = mocha_values_create_integer(runtime->values, count);
 
+	return o;
+}
+
+MOCHA_FUNCTION(fail_func)
+{
+	const mocha_object* argument = arguments->objects[1];
+	// if (argument->type != mocha_object_type_string) {
+	// 	return 0;
+	// }
+	runtime->error.code = mocha_error_code_fail;
+	runtime->error.string = mocha_string_to_c(&argument->data.string);
+	const mocha_object* o = mocha_values_create_nil(runtime->values);
 	return o;
 }
 
@@ -897,6 +903,7 @@ static void bootstrap_context(mocha_runtime* self, mocha_values* values)
 	MOCHA_DEF_FUNCTION(unquote, mocha_false);
 	MOCHA_DEF_FUNCTION(not, mocha_true);
 	MOCHA_DEF_FUNCTION(vec, mocha_true);
+	MOCHA_DEF_FUNCTION(fail, mocha_true);
 	mocha_runtime_push_context(self, context);
 }
 
@@ -925,10 +932,9 @@ static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, c
 			mocha_context_add(new_context, arg, arguments_list->objects[1 + arg_count]);
 		}
 		mocha_runtime_push_context(self, new_context);
-		mocha_error error;
-		o = mocha_runtime_eval(self, fn->data.function.code, &error);
+		o = mocha_runtime_eval(self, fn->data.function.code, &self->error);
 		if (fn->object_type->is_macro) {
-			o = mocha_runtime_eval(self, o, &error);
+			o = mocha_runtime_eval(self, o, &self->error);
 		}
 		mocha_runtime_pop_context(self);
 	}
@@ -945,6 +951,7 @@ void mocha_runtime_init(mocha_runtime* self)
 	mocha_context* context = malloc(sizeof(mocha_context));
 	mocha_context_init(context, 0);
 	self->context = context;
+	mocha_error_init(&self->error);
 	bootstrap_context(self, self->values);
 }
 

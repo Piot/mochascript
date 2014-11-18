@@ -111,17 +111,14 @@ int main(int argc, char* argv[])
 	mocha_runtime runtime;
 	mocha_runtime_init(&runtime);
 
-	mocha_error error;
-	mocha_error_init(&error);
-
 	if (argc > 1) {
 		const char* filename = argv[1];
-		eval_file(&runtime, &parser, filename, &error);
+		eval_file(&runtime, &parser, filename, &runtime.error);
 	} else {
-		repl(&runtime, &parser, &error);
+		repl(&runtime, &parser, &runtime.error);
 	}
 
-	if (error.code != mocha_error_code_ok) {
-		mocha_error_show(&error);
+	if (runtime.error.code != mocha_error_code_ok) {
+		mocha_error_show(&runtime.error);
 	}
 }
