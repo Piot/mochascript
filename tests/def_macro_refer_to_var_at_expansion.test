@@ -1,0 +1,7 @@
+(def a "prosit")
+(defmacro sneeze []
+  `(println a))
+(let [a "bleh"]
+  (sneeze))
+---
+prosit
