@@ -1,0 +1,5 @@
+(defmacro ignore [x] nil)
+(ignore (fail "This is a failure."))
+"success"
+---
+"success"
