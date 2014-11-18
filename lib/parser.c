@@ -5,7 +5,6 @@
 #include <mocha/symbol.h>
 #include <mocha/string.h>
 
-#include <math.h>
 #include <stdlib.h>
 
 static mocha_boolean is_space(mocha_char ch)
@@ -161,6 +160,16 @@ static float mocha_atof(const char* s, mocha_boolean* worked)
 	float result = 0;
 	int number_position = -inverse_dot_pos;
 	mocha_boolean negative = mocha_false;
+	unsigned long factor;
+
+	int minimum_position = number_position;
+	if (minimum_position < -6) {
+		minimum_position = -6;
+	}
+	factor = 1000000;
+	for (int i=0; i < -minimum_position; ++i) {
+		factor /= 10;
+	}
 
 	for (int i=len-1; i>=0; --i) {
 		int ch = s[i];
@@ -172,10 +181,9 @@ static float mocha_atof(const char* s, mocha_boolean* worked)
 
 		} else if (is_numerical(ch)) {
 			int v = (ch - '0');
-			if (v != 0) {
-				float factor = pow(10, number_position);
-				// MOCHA_LOG("pos:%d Factor:%f", number_position, factor);
-				result += (factor * v);
+			if (number_position >= minimum_position) {
+				result += ((factor / 1000000.0f) * v);
+				factor *= 10;
 			}
 			number_position++;
 		} else {
@@ -183,6 +191,7 @@ static float mocha_atof(const char* s, mocha_boolean* worked)
 			return 0;
 		}
 	}
+
 	*worked = mocha_true;
 
 	if (negative) {
