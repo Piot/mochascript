@@ -5,6 +5,7 @@
 #include <mocha/symbol.h>
 #include <mocha/string.h>
 
+#include <math.h>
 #include <stdlib.h>
 
 static mocha_boolean is_space(mocha_char ch)
@@ -152,6 +153,43 @@ static int parse_word(mocha_parser* self, mocha_char* char_buffer, int max_symbo
 	return word_buffer.count;
 }
 
+static float mocha_atof(const char* s, mocha_boolean* worked)
+{
+	size_t len = strlen(s);
+	size_t dot_pos = mocha_strchr(s, '.') - s;
+	size_t inverse_dot_pos = (len - 1) - dot_pos;
+	float result = 0;
+	int number_position = -inverse_dot_pos;
+	mocha_boolean negative = mocha_false;
+
+	for (int i=len-1; i>=0; --i) {
+		int ch = s[i];
+		if (ch == '-') {
+			negative = mocha_true;
+		} else if (i == dot_pos) {
+
+		} else if (is_numerical(ch)) {
+			int v = (ch - '0');
+			if (v != 0) {
+				float factor = pow(10, number_position);
+				// MOCHA_LOG("pos:%d Factor:%f", number_position, factor);
+				result += (factor * v);
+			}
+			number_position++;
+		} else {
+			*worked = mocha_false;
+			return 0;
+		}
+	}
+	*worked = mocha_true;
+
+	if (negative) {
+		result = - result;
+	}
+
+	return result;
+}
+
 static const mocha_object* parse_number(mocha_parser* self, mocha_error* error)
 {
 	const int max_symbol_length = 64;
@@ -171,7 +209,11 @@ static const mocha_object* parse_number(mocha_parser* self, mocha_error* error)
 	const mocha_object* o;
 
 	if (is_floating_point) {
-		o = mocha_values_create_float(&self->values, atof(s));
+		mocha_boolean worked;
+		o = mocha_values_create_float(&self->values, mocha_atof(s, &worked));
+		if (!worked) {
+			MOCHA_ERR(mocha_error_code_illegal_float_number);
+		}
 	} else {
 		o = mocha_values_create_integer(&self->values, atol(s));
 	}
@@ -312,11 +354,11 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 			o = parse_string(self, error);
 			break;
 		default:
-			if (first_char == '-') {
+			if (first_char == '-' || first_char == '.') {
 				mocha_char ch = read_char(self);
 				unread_char(self, ch);
 				unread_char(self, first_char);
-				if (is_numerical(ch)) {
+				if (is_numerical(ch) || ch == '.') {
 					o = parse_number(self, error);
 				} else {
 					o = parse_symbol(self, error);
