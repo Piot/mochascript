@@ -166,6 +166,8 @@ static float mocha_atof(const char* s, mocha_boolean* worked)
 		int ch = s[i];
 		if (ch == '-') {
 			negative = mocha_true;
+		} else if (ch == '+') {
+
 		} else if (i == dot_pos) {
 
 		} else if (is_numerical(ch)) {
@@ -354,11 +356,11 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 			o = parse_string(self, error);
 			break;
 		default:
-			if (first_char == '-' || first_char == '.') {
+			if (first_char == '-' || first_char == '+') {
 				mocha_char ch = read_char(self);
 				unread_char(self, ch);
 				unread_char(self, first_char);
-				if (is_numerical(ch) || ch == '.') {
+				if (is_numerical(ch)) {
 					o = parse_number(self, error);
 				} else {
 					o = parse_symbol(self, error);
