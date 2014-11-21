@@ -858,6 +858,15 @@ MOCHA_FUNCTION(nil_func)
 	MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments) \
 	mocha_context_add_function(context, values, exported_name, &name##_def);
 
+void mocha_runtime_add_function(mocha_runtime* self, const char* name, mocha_type_invoke func)
+{
+    mocha_type* internal_function_type = malloc(sizeof(mocha_type));
+    internal_function_type->is_macro = mocha_false;
+    internal_function_type->invoke = func;
+    internal_function_type->eval_all_arguments = mocha_true;
+    mocha_context_add_function(self->context, self->values, name, internal_function_type);
+}
+
 static void bootstrap_context(mocha_runtime* self, mocha_values* values)
 {
 	mocha_context* context = self->context;
@@ -970,10 +979,6 @@ void mocha_runtime_pop_context(mocha_runtime* self)
 	self->context = self->contexts[self->stack_depth];
 }
 
-
-
-
-
 const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const struct mocha_object* o, mocha_error* error, mocha_boolean eval_symbols)
 {
 	if (o->type == mocha_object_type_list) {
@@ -1021,6 +1026,22 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 	}
 
 	return o;
+}
+
+
+const struct mocha_object* mocha_runtime_eval_commands(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
+{
+    if (o && o->type == mocha_object_type_list) {
+        const mocha_list* list = &o->data.list;
+        const mocha_object* result;
+        for (int i = 0; i < list->count; ++i) {
+            result = mocha_runtime_eval(self, list->objects[i], error);
+        }
+        return result;
+    }
+    
+    MOCHA_ERR(mocha_error_code_expected_list);
+    
 }
 
 const struct mocha_object* mocha_runtime_eval(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
