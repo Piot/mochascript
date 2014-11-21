@@ -6,7 +6,6 @@ mocha_boolean mocha_string_equal_str(const mocha_string* self, const char* cstr)
 {
 	const mocha_char* p = self->string;
 	const char* s = cstr;
-	mocha_char ch;
 
 	size_t c_len = strlen(cstr);
 	if (self->count != c_len) {

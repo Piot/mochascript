@@ -233,7 +233,6 @@ static const mocha_object* parse_number(mocha_parser* self, mocha_error* error)
 
 static const mocha_object* parse_string(mocha_parser* self, mocha_error* error)
 {
-	const mocha_char* p = self->input;
 	mocha_char temp[1024];
 	size_t count = 0;
 	mocha_char ch;

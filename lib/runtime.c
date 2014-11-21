@@ -9,7 +9,6 @@
 
 MOCHA_FUNCTION(map_fn)
 {
-	const mocha_object* f = arguments->objects[1];
 	const mocha_object* sequence = arguments->objects[2];
 	const mocha_object* result = 0;
 
@@ -35,7 +34,6 @@ MOCHA_FUNCTION(map_fn)
 MOCHA_FUNCTION(vec_func)
 {
 	const mocha_object* sequence = arguments->objects[1];
-	const mocha_object* result = 0;
 
 	const mocha_object* r;
 	switch (sequence->type) {
@@ -306,11 +304,6 @@ MOCHA_FUNCTION(dec_func)
 
 MOCHA_FUNCTION(thread_first_func)
 {
-	const mocha_object* argument = arguments->objects[1];
-	const mocha_object* result[128];
-	for (size_t c = 1; c < arguments->count; ++c) {
-		const mocha_object* v = arguments->objects[c];
-	}
 	return 0;
 }
 
@@ -781,7 +774,6 @@ MOCHA_FUNCTION(not_func)
 MOCHA_FUNCTION(count_func)
 {
 	const mocha_object* sequence = arguments->objects[1];
-	mocha_boolean is_empty = mocha_true;
 
 	int count = 0;
 	switch (sequence->type) {
