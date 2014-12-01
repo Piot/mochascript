@@ -5,12 +5,12 @@
 
 void mocha_runtime_init(mocha_runtime* self)
 {
-    self->context = 0;
-    const int max_depth = 1024;
-    self->contexts = malloc(sizeof(const mocha_context*) * max_depth);
-    self->stack_depth = 0;
-    self->context = 0;
-    mocha_error_init(&self->error);
+	self->context = 0;
+	const int max_depth = 1024;
+	self->contexts = malloc(sizeof(const mocha_context*) * max_depth);
+	self->stack_depth = 0;
+	self->context = 0;
+	mocha_error_init(&self->error);
 }
 
 static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, const mocha_object* fn, const mocha_list* arguments_list)
@@ -60,9 +60,9 @@ void mocha_runtime_push_context(mocha_runtime* self, mocha_context* context)
 
 void mocha_runtime_clear_contexts(mocha_runtime* self)
 {
-    while (self->stack_depth > 0) {
-        mocha_runtime_pop_context(self);
-    }
+	while (self->stack_depth > 0) {
+		mocha_runtime_pop_context(self);
+	}
 }
 
 void mocha_runtime_pop_context(mocha_runtime* self)
@@ -126,16 +126,16 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 
 const struct mocha_object* mocha_runtime_eval_commands(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
 {
-    if (o && o->type == mocha_object_type_list) {
-        const mocha_list* list = &o->data.list;
-        const mocha_object* result;
-        for (int i = 0; i < list->count; ++i) {
-            result = mocha_runtime_eval(self, list->objects[i], error);
-        }
-        return result;
-    }
+	if (o && o->type == mocha_object_type_list) {
+		const mocha_list* list = &o->data.list;
+		const mocha_object* result;
+		for (int i = 0; i < list->count; ++i) {
+			result = mocha_runtime_eval(self, list->objects[i], error);
+		}
+		return result;
+	}
 
-    MOCHA_ERR(mocha_error_code_expected_list);
+	MOCHA_ERR(mocha_error_code_expected_list);
 
 }
 

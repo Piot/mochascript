@@ -15,8 +15,8 @@ typedef struct mocha_runtime {
 	int stack_depth;
 	const struct mocha_object* nil;
 	struct mocha_values* values;
-    struct mocha_error error;
-    void* user_data;
+	struct mocha_error error;
+	void* user_data;
 } mocha_runtime;
 
 void mocha_runtime_init(mocha_runtime* self);
@@ -25,12 +25,8 @@ void mocha_runtime_clear_contexts(mocha_runtime* self);
 void mocha_runtime_pop_context(mocha_runtime* self);
 void mocha_runtime_push_context(mocha_runtime* self, mocha_context* context);
 
-void mocha_runtime_add_function(mocha_runtime* self, const char* name, mocha_type_invoke func);
-
-const struct mocha_object*  mocha_runtime_eval(mocha_runtime* self, const struct mocha_object* o, struct mocha_error* error);
+const struct mocha_object* mocha_runtime_eval(mocha_runtime* self, const struct mocha_object* o, struct mocha_error* error);
 const struct mocha_object* mocha_runtime_eval_symbols(mocha_runtime* self, const struct mocha_object* o, struct mocha_error* error);
 const struct mocha_object* mocha_runtime_eval_commands(mocha_runtime* self, const struct mocha_object* o, mocha_error* error);
-
-const struct mocha_object* mocha_runtime_create_boolean(mocha_runtime* self, mocha_boolean value);
 
 #endif
