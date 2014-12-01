@@ -281,7 +281,6 @@ MOCHA_FUNCTION(dec_func)
 {
 	mocha_number v;
 
-
 	const mocha_object* argument = arguments->objects[1];
 	if (argument->type == mocha_object_type_number) {
 		switch (argument->data.number.type) {

@@ -136,13 +136,11 @@ const mocha_object* mocha_values_create_macro(mocha_values* self, const struct m
 	return r;
 }
 
-
 const struct mocha_object* mocha_values_create_nil(mocha_values* self)
 {
 	mocha_object* value = mocha_values_create_object(self, mocha_object_type_nil);
 	return value;
 }
-
 
 const struct mocha_object* mocha_values_create_number(mocha_values* self, mocha_number number)
 {
@@ -151,7 +149,6 @@ const struct mocha_object* mocha_values_create_number(mocha_values* self, mocha_
 
 	return value;
 }
-
 
 MOCHA_FUNCTION(keyword_func)
 {

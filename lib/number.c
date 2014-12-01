@@ -33,7 +33,6 @@ mocha_boolean mocha_number_less(const mocha_number* a, const mocha_number* b)
 	}
 }
 
-
 float mocha_number_float(const mocha_number* self)
 {
 	switch (self->type) {

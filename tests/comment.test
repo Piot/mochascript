@@ -1,0 +1,6 @@
+; This should be totally ignored
+(inc ; as well as this
+  4
+)
+---
+5

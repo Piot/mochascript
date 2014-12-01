@@ -14,13 +14,29 @@ void mocha_char_buffer_init(mocha_char_buffer* self, const mocha_char* input, si
 	self->input_end = self->input + input_length;
 }
 
+
+static mocha_char skip_to_eol(mocha_char_buffer* self)
+{
+	int ch;
+
+	do {
+		ch = mocha_char_buffer_read_char(self);
+	} while (ch != 0 && !mocha_char_is_eol(ch));
+
+	return ch;
+}
+
 mocha_char mocha_char_buffer_read_char(mocha_char_buffer* self)
 {
 	if (self->input > self->input_end) {
 		MOCHA_LOG("ERROR: You read too far!");
 		return -1;
 	}
+
 	mocha_char ch = *self->input++;
+	if (ch == ';') {
+		ch = skip_to_eol(self);
+	}
 
 	return ch;
 }
@@ -46,3 +62,4 @@ mocha_char mocha_char_buffer_skip_space(mocha_char_buffer* self)
 
 	return ch;
 }
+

@@ -136,7 +136,6 @@ const struct mocha_object* mocha_runtime_eval_commands(mocha_runtime* self, cons
 	}
 
 	MOCHA_ERR(mocha_error_code_expected_list);
-
 }
 
 const struct mocha_object* mocha_runtime_eval(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)

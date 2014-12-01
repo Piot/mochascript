@@ -48,7 +48,6 @@ void print_array_debug(string_stream* f, const mocha_object* objects[], size_t c
 	}
 }
 
-
 void print_object_debug(string_stream* f, const mocha_object* o)
 {
 	char buf[256];

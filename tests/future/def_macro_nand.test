@@ -1,0 +1,11 @@
+(defmacro nand
+  ([] false)
+  ([x] `(not ~x))
+  ([x y] `(not (and ~x ~y)))
+;  ([x y & more] `(not (and ~x ~y ~@more)))
+)
+(nand true true)
+(nand false true)
+---
+false
+true

@@ -217,6 +217,7 @@ static const mocha_object* parse_tick(mocha_parser* self, mocha_error* error)
 	return l;
 }
 
+
 static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 {
 	const mocha_object* o = 0;

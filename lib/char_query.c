@@ -19,3 +19,8 @@ mocha_boolean mocha_char_is_separator(mocha_char ch)
 {
 	return mocha_strchr("(){}[]\'`\"", ch) != 0;
 }
+
+mocha_boolean mocha_char_is_eol(mocha_char ch)
+{
+	return ch == 10;
+}
