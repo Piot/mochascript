@@ -7,11 +7,10 @@
 #include <mocha/string.h>
 #include <mocha/error.h>
 #include <mocha/values.h>
+#include <mocha/char_buffer.h>
 
 typedef struct mocha_parser {
-	const mocha_char* input;
-	const mocha_char* input_end;
-	mocha_char* input_buffer;
+	mocha_char_buffer buffer;
 	mocha_context* context;
 	mocha_error error;
 	mocha_values values;

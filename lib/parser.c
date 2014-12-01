@@ -4,74 +4,9 @@
 #include <mocha/context.h>
 #include <mocha/symbol.h>
 #include <mocha/string.h>
-
+#include "char_query.h"
+#include "parse_float.h"
 #include <stdlib.h>
-
-static mocha_boolean is_space(mocha_char ch)
-{
-	return mocha_strchr("\t\n\r, ", ch) != 0;
-}
-
-static mocha_boolean is_alpha(mocha_char ch)
-{
-	return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (mocha_strchr("_!#$*+-><=./?", ch) != 0);
-}
-
-static mocha_boolean is_numerical(mocha_char ch)
-{
-	return (ch >= '0' && ch <= '9');
-}
-
-
-static mocha_char read_char(mocha_parser* self)
-{
-	if (self->input > self->input_end) {
-		MOCHA_LOG("ERROR: You read too far!");
-		return -1;
-	}
-	mocha_char ch = *self->input++;
-
-	return ch;
-}
-
-static void unread_char(mocha_parser* self, mocha_char c)
-{
-	if (self->input == self->input_buffer) {
-		MOCHA_LOG("ERROR: You unread too far!");
-	}
-	self->input--;
-	if (c != *self->input) {
-		MOCHA_LOG("ERROR: You unread illegal char!");
-	}
-}
-
-
-static mocha_char skip_space(mocha_parser* self)
-{
-	int ch;
-
-	do {
-		ch = read_char(self);
-	} while (ch != 0 && is_space(ch));
-
-	return ch;
-}
-
-static mocha_boolean is_separator(mocha_char ch)
-{
-	return mocha_strchr("(){}[]\'`\"", ch) != 0;
-}
-
-size_t mocha_string_length(const mocha_char* s)
-{
-	const mocha_char* p = s;
-	size_t count = 0;
-	while (!*p++ == 0) {
-		count++;
-	}
-	return count;
-}
-
 
 static const mocha_object* parse_object(mocha_parser* self, mocha_error* error);
 
@@ -80,13 +15,13 @@ static int parse_array(mocha_parser* self, mocha_char end_char, mocha_error* err
 	int count = 0;
 
 	while (count < array_max_count) {
-		mocha_char ch = skip_space(self);
+		mocha_char ch = mocha_char_buffer_skip_space(&self->buffer);
 		if (ch == end_char) {
 			return count;
 		} else if (!ch) {
 			MOCHA_ERR(mocha_error_code_unexpected_end);
 		}
-		unread_char(self, ch);
+		mocha_char_buffer_unread_char(&self->buffer, ch);
 		const mocha_object* o = parse_object(self, error);
 		if (!o || error->code != 0) {
 			return count;
@@ -136,10 +71,10 @@ static int parse_word(mocha_parser* self, mocha_char* char_buffer, int max_symbo
 	word_buffer.count = 0;
 
 	while (1) {
-		mocha_char ch = read_char(self);
-		if (is_space(ch) || is_separator(ch) || !ch) {
-			if (is_separator(ch)) {
-				unread_char(self, ch);
+		mocha_char ch = mocha_char_buffer_read_char(&self->buffer);
+		if (mocha_char_is_space(ch) || mocha_char_is_separator(ch) || !ch) {
+			if (mocha_char_is_separator(ch)) {
+				mocha_char_buffer_unread_char(&self->buffer, ch);
 			}
 			break;
 		}
@@ -150,55 +85,6 @@ static int parse_word(mocha_parser* self, mocha_char* char_buffer, int max_symbo
 	}
 
 	return word_buffer.count;
-}
-
-static float mocha_atof(const char* s, mocha_boolean* worked)
-{
-	size_t len = strlen(s);
-	size_t dot_pos = mocha_strchr(s, '.') - s;
-	size_t inverse_dot_pos = (len - 1) - dot_pos;
-	float result = 0;
-	int number_position = -inverse_dot_pos;
-	mocha_boolean negative = mocha_false;
-	unsigned long factor;
-
-	int minimum_position = number_position;
-	if (minimum_position < -6) {
-		minimum_position = -6;
-	}
-	factor = 1000000;
-	for (int i=0; i < -minimum_position; ++i) {
-		factor /= 10;
-	}
-
-	for (int i=len-1; i>=0; --i) {
-		int ch = s[i];
-		if (ch == '-') {
-			negative = mocha_true;
-		} else if (ch == '+') {
-
-		} else if (i == dot_pos) {
-
-		} else if (is_numerical(ch)) {
-			int v = (ch - '0');
-			if (number_position >= minimum_position) {
-				result += ((factor / 1000000.0f) * v);
-				factor *= 10;
-			}
-			number_position++;
-		} else {
-			*worked = mocha_false;
-			return 0;
-		}
-	}
-
-	*worked = mocha_true;
-
-	if (negative) {
-		result = - result;
-	}
-
-	return result;
 }
 
 static const mocha_object* parse_number(mocha_parser* self, mocha_error* error)
@@ -236,7 +122,7 @@ static const mocha_object* parse_string(mocha_parser* self, mocha_error* error)
 	mocha_char temp[1024];
 	size_t count = 0;
 	mocha_char ch;
-	while ((ch = read_char(self)) != '"') {
+	while ((ch = mocha_char_buffer_read_char(&self->buffer)) != '"') {
 		if (!ch) {
 			MOCHA_ERR(mocha_error_code_missing_end_of_string);
 		}
@@ -335,7 +221,7 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 {
 	const mocha_object* o = 0;
 
-	mocha_char first_char = skip_space(self);
+	mocha_char first_char = mocha_char_buffer_skip_space(&self->buffer);
 	switch (first_char) {
 		case 0:
 			MOCHA_LOG("END!");
@@ -365,19 +251,19 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 			break;
 		default:
 			if (first_char == '-' || first_char == '+') {
-				mocha_char ch = read_char(self);
-				unread_char(self, ch);
-				unread_char(self, first_char);
-				if (is_numerical(ch)) {
+				mocha_char ch = mocha_char_buffer_read_char(&self->buffer);
+				mocha_char_buffer_unread_char(&self->buffer, ch);
+				mocha_char_buffer_unread_char(&self->buffer, first_char);
+				if (mocha_char_is_numerical(ch)) {
 					o = parse_number(self, error);
 				} else {
 					o = parse_symbol(self, error);
 				}
-			} else if (is_numerical(first_char)) {
-				unread_char(self, first_char);
+			} else if (mocha_char_is_numerical(first_char)) {
+				mocha_char_buffer_unread_char(&self->buffer, first_char);
 				o = parse_number(self, error);
-			} else if (is_alpha(first_char)) {
-				unread_char(self, first_char);
+			} else if (mocha_char_is_alpha(first_char)) {
+				mocha_char_buffer_unread_char(&self->buffer, first_char);
 				o = parse_symbol(self, error);
 			} else {
 				MOCHA_LOG("'%d' %c", first_char, first_char);
@@ -390,12 +276,7 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 
 void mocha_parser_init(mocha_parser* self, mocha_context* context, const mocha_char* input, size_t input_length)
 {
-	self->input_buffer = malloc(sizeof(mocha_char) * input_length + 1);
-	memcpy(self->input_buffer, input, sizeof(mocha_char) * input_length);
-	self->input_buffer[input_length] = 0;
-
-	self->input = self->input_buffer;
-	self->input_end = self->input + input_length;
+	mocha_char_buffer_init(&self->buffer, input, input_length);
 	mocha_values_init(&self->values);
 	self->context = context;
 }
