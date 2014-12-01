@@ -21,6 +21,7 @@ typedef struct mocha_runtime {
 
 void mocha_runtime_init(mocha_runtime* self);
 
+void mocha_runtime_clear_contexts(mocha_runtime* self);
 void mocha_runtime_pop_context(mocha_runtime* self);
 void mocha_runtime_push_context(mocha_runtime* self, mocha_context* context);
 

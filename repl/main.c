@@ -1,5 +1,6 @@
 #include <mocha/parser.h>
 #include <mocha/runtime.h>
+#include <mocha/core.h>
 #include <mocha/object.h>
 #include <mocha/print.h>
 #include <mocha/log.h>
@@ -110,6 +111,10 @@ int main(int argc, char* argv[])
 	mocha_parser parser;
 	mocha_runtime runtime;
 	mocha_runtime_init(&runtime);
+
+	mocha_context* root_context = mocha_context_create(0);
+	mocha_core_define_context(root_context, runtime.values);
+	mocha_runtime_push_context(&runtime, root_context);
 
 	if (argc > 1) {
 		const char* filename = argv[1];

@@ -27,6 +27,9 @@ static const char* error_string(const mocha_error* error, char* buffer)
 		case mocha_error_code_illegal_float_number:
 			s = "Illegal float number";
 			break;
+        case mocha_error_code_expected_list:
+            s = "Expected a list";
+            break;
 		case mocha_error_code_fail:
 			sprintf(buffer, "Failed: %s", error->string);
 			s = buffer;
