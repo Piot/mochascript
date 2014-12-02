@@ -70,7 +70,7 @@ static void repl(mocha_runtime* runtime, mocha_parser* parser, mocha_error* erro
 			break;
 		}
 
-		mocha_parser_init(parser, runtime->context, input, input_length);
+		mocha_parser_init(parser, runtime->values, runtime->context, input, input_length);
 
 		const mocha_object* o;
 		o = parse_and_print(runtime, parser, mocha_false, error);
@@ -96,7 +96,7 @@ static const mocha_object* eval_file(mocha_runtime* runtime, mocha_parser* parse
 		temp_input[i] = temp_buffer[i];
 	}
 	temp_input[character_count] = 0;
-	mocha_parser_init(parser, runtime->context, temp_input, character_count);
+	mocha_parser_init(parser, runtime->values, runtime->context, temp_input, character_count);
 	const mocha_object* o = parse_and_print(runtime, parser, mocha_true, error);
 	MOCHA_LOG("");
 	free(temp_input);
@@ -108,9 +108,12 @@ static const mocha_object* eval_file(mocha_runtime* runtime, mocha_parser* parse
 
 int main(int argc, char* argv[])
 {
+	mocha_values values;
+	mocha_values_init(&values);
+
 	mocha_parser parser;
 	mocha_runtime runtime;
-	mocha_runtime_init(&runtime);
+	mocha_runtime_init(&runtime, &values);
 
 	mocha_context* root_context = mocha_context_create(0);
 	mocha_core_define_context(root_context, runtime.values);

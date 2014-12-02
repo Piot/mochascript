@@ -1,0 +1,6 @@
+(defn something [this that & the_other]
+	{:count (count the_other) :first (first the_other)}
+)
+(something 1 2 "kalle" -99)
+---
+{:count 2 :first "kalle"}

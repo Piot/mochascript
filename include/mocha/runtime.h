@@ -19,7 +19,7 @@ typedef struct mocha_runtime {
 	void* user_data;
 } mocha_runtime;
 
-void mocha_runtime_init(mocha_runtime* self);
+void mocha_runtime_init(mocha_runtime* self, struct mocha_values* values);
 
 void mocha_runtime_clear_contexts(mocha_runtime* self);
 void mocha_runtime_pop_context(mocha_runtime* self);

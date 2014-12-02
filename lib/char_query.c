@@ -7,7 +7,7 @@ mocha_boolean mocha_char_is_space(mocha_char ch)
 
 mocha_boolean mocha_char_is_alpha(mocha_char ch)
 {
-	return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (mocha_strchr("_!#$*+-><=./?", ch) != 0);
+	return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (mocha_strchr("&_!#$*+-><=./?", ch) != 0);
 }
 
 mocha_boolean mocha_char_is_numerical(mocha_char ch)

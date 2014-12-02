@@ -38,7 +38,7 @@ static const mocha_object* parse_map(mocha_parser* self, mocha_error* error)
 {
 	const mocha_object* args[128];
 	int count = parse_array(self, '}', error, args, 128);
-	const mocha_object* o = mocha_values_create_map(&self->values, args, count);
+	const mocha_object* o = mocha_values_create_map(self->values, args, count);
 
 	return o;
 }
@@ -47,7 +47,7 @@ static const mocha_object* parse_vector(mocha_parser* self, mocha_error* error)
 {
 	const mocha_object* args[128];
 	int count = parse_array(self, ']', error, args, 128);
-	const mocha_object* o = mocha_values_create_vector(&self->values, args, count);
+	const mocha_object* o = mocha_values_create_vector(self->values, args, count);
 	return o;
 }
 
@@ -59,7 +59,7 @@ static const mocha_object* parse_list(mocha_parser* self, mocha_error* error)
 		return 0;
 	}
 
-	const mocha_object* o = mocha_values_create_list(&self->values, args, count);
+	const mocha_object* o = mocha_values_create_list(self->values, args, count);
 	return o;
 }
 
@@ -107,12 +107,12 @@ static const mocha_object* parse_number(mocha_parser* self, mocha_error* error)
 
 	if (is_floating_point) {
 		mocha_boolean worked;
-		o = mocha_values_create_float(&self->values, mocha_atof(s, &worked));
+		o = mocha_values_create_float(self->values, mocha_atof(s, &worked));
 		if (!worked) {
 			MOCHA_ERR(mocha_error_code_illegal_float_number);
 		}
 	} else {
-		o = mocha_values_create_integer(&self->values, atol(s));
+		o = mocha_values_create_integer(self->values, atol(s));
 	}
 	return o;
 }
@@ -129,7 +129,7 @@ static const mocha_object* parse_string(mocha_parser* self, mocha_error* error)
 		temp[count++] = ch;
 	}
 	temp[count] = 0;
-	const mocha_object* o = mocha_values_create_string(&self->values, temp, count);
+	const mocha_object* o = mocha_values_create_string(self->values, temp, count);
 
 	return o;
 }
@@ -156,13 +156,13 @@ static const mocha_object* parse_symbol(mocha_parser* self, mocha_error* error)
 	word_buffer.string = char_buffer;
 	word_buffer.count = length;
 	if (mocha_string_equal_str(&word_buffer, "true")) {
-		o = mocha_values_create_boolean(&self->values, mocha_true);
+		o = mocha_values_create_boolean(self->values, mocha_true);
 	} else if (mocha_string_equal_str(&word_buffer, "false")) {
-		o = mocha_values_create_boolean(&self->values, mocha_false);
+		o = mocha_values_create_boolean(self->values, mocha_false);
 	} else if (mocha_string_equal_str(&word_buffer, "nil")) {
-		o = mocha_values_create_nil(&self->values);
+		o = mocha_values_create_nil(self->values);
 	} else {
-		o = create_symbol(&self->values, &word_buffer);
+		o = create_symbol(self->values, &word_buffer);
 	}
 	return o;
 }
@@ -176,7 +176,7 @@ static const mocha_object* parse_keyword(mocha_parser* self, mocha_error* error)
 		return 0;
 	}
 
-	const mocha_object* o = mocha_values_create_keyword(&self->values, char_buffer, length);
+	const mocha_object* o = mocha_values_create_keyword(self->values, char_buffer, length);
 	// self->context = mocha_context_add(self->context, o, o);
 	return o;
 }
@@ -187,14 +187,14 @@ static const mocha_object* parse_unquote(mocha_parser* self, mocha_error* error)
 
 	mocha_string temp_string;
 	mocha_string_init_from_c(&temp_string, "unquote");
-	const mocha_object* quote_symbol = create_symbol(&self->values, &temp_string);
+	const mocha_object* quote_symbol = create_symbol(self->values, &temp_string);
 
 	const mocha_object* args[2];
 
 	args[0] = quote_symbol;
 	args[1] = do_not_eval;
 
-	const mocha_object* l = mocha_values_create_list(&self->values, args, 2);
+	const mocha_object* l = mocha_values_create_list(self->values, args, 2);
 
 	return l;
 }
@@ -205,14 +205,14 @@ static const mocha_object* parse_tick(mocha_parser* self, mocha_error* error)
 
 	mocha_string temp_string;
 	mocha_string_init_from_c(&temp_string, "quote");
-	const mocha_object* quote_symbol = create_symbol(&self->values, &temp_string);
+	const mocha_object* quote_symbol = create_symbol(self->values, &temp_string);
 
 	const mocha_object* args[2];
 
 	args[0] = quote_symbol;
 	args[1] = do_not_eval;
 
-	const mocha_object* l = mocha_values_create_list(&self->values, args, 2);
+	const mocha_object* l = mocha_values_create_list(self->values, args, 2);
 
 	return l;
 }
@@ -275,10 +275,10 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 	return o;
 }
 
-void mocha_parser_init(mocha_parser* self, mocha_context* context, const mocha_char* input, size_t input_length)
+void mocha_parser_init(mocha_parser* self, mocha_values* values, mocha_context* context, const mocha_char* input, size_t input_length)
 {
 	mocha_char_buffer_init(&self->buffer, input, input_length);
-	mocha_values_init(&self->values);
+	self->values = values;
 	self->context = context;
 }
 
@@ -290,7 +290,7 @@ const mocha_object* mocha_parser_parse(mocha_parser* self, mocha_error* error)
 		return 0;
 	}
 
-	const mocha_object* o = mocha_values_create_list(&self->values, args, count);
+	const mocha_object* o = mocha_values_create_list(self->values, args, count);
 
 	return o;
 }

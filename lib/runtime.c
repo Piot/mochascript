@@ -1,15 +1,17 @@
 #include <mocha/runtime.h>
 #include <mocha/print.h>
 #include <mocha/log.h>
+#include <mocha/values.h>
 #include <stdlib.h>
 
-void mocha_runtime_init(mocha_runtime* self)
+void mocha_runtime_init(mocha_runtime* self, mocha_values* values)
 {
 	self->context = 0;
 	const int max_depth = 1024;
 	self->contexts = malloc(sizeof(const mocha_context*) * max_depth);
 	self->stack_depth = 0;
 	self->context = 0;
+	self->values = values;
 	mocha_error_init(&self->error);
 }
 
@@ -32,7 +34,13 @@ static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, c
 				MOCHA_LOG("Must use symbols!");
 				return 0;
 			}
-			mocha_context_add(new_context, arg, arguments_list->objects[1 + arg_count]);
+			if (mocha_string_equal_str(arg->data.symbol.string, "&")) {
+				const mocha_object* arg = args->objects[arg_count + 1];
+				const mocha_object* list = mocha_values_create_list(self->values, &arguments_list->objects[1 + arg_count], args->count - arg_count);
+				mocha_context_add(new_context, arg, list);
+			} else {
+				mocha_context_add(new_context, arg, arguments_list->objects[1 + arg_count]);
+			}
 		}
 		mocha_runtime_push_context(self, new_context);
 		o = mocha_runtime_eval(self, fn->data.function.code, &self->error);
@@ -113,7 +121,20 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 			mocha_print_object_debug(fn);
 		}
 	} else {
-		if (o->type == mocha_object_type_symbol) {
+		if (o->type == mocha_object_type_map) {
+			const mocha_map* m = &o->data.map;
+			const mocha_object* converted_args[32];
+			for (size_t i = 0; i < m->count; ++i) {
+				const struct mocha_object* arg = mocha_runtime_eval(self, m->objects[i], error);
+				if (!arg) {
+					MOCHA_LOG("Couldn't evaluate:");
+					mocha_print_object_debug(m->objects[i]);
+					return 0;
+				}
+				converted_args[i] = arg;
+			}
+			o = mocha_values_create_map(self->values, converted_args, m->count);
+		} else if (o->type == mocha_object_type_symbol) {
 			o = mocha_context_lookup(self->context, o);
 			if (eval_symbols && o) {
 				o = mocha_runtime_eval(self, o, error);
