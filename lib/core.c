@@ -45,7 +45,7 @@ MOCHA_FUNCTION(vec_func)
 		case mocha_object_type_map: {
 			const mocha_map* map = &sequence->data.map;
 			const mocha_object* objects[64];
-			for (int i=0; i<map->count; i+= 2) {
+			for (size_t i=0; i<map->count; i+= 2) {
 				objects[i/2] = mocha_values_create_vector(runtime->values, &map->objects[i], 2);
 			}
 			r = mocha_values_create_vector(runtime->values, objects, map->count/2);
@@ -122,7 +122,7 @@ MOCHA_FUNCTION(if_func)
 		return condition;
 	}
 	mocha_boolean satisfied = condition->data.b;
-	int eval_index = satisfied ? 2 : 3;
+	size_t eval_index = satisfied ? 2 : 3;
 	if (eval_index >= arguments->count) {
 		const mocha_object* r = mocha_values_create_nil(runtime->values);
 		return r;
@@ -580,6 +580,7 @@ MOCHA_FUNCTION(conj_func)
 			result = conj_map(runtime->values, &sequence->data.map, &arguments->objects[2]->data.map);
 			break;
 		default:
+			result = 0;
 			break;
 	}
 
@@ -631,6 +632,7 @@ MOCHA_FUNCTION(cons_func)
 			result = 0;
 			break;
 		default:
+			result = 0;
 			break;
 	}
 
@@ -686,6 +688,7 @@ MOCHA_FUNCTION(rest_func)
 			result = 0;
 			break;
 		default:
+			result = 0;
 			break;
 	}
 
@@ -720,6 +723,7 @@ MOCHA_FUNCTION(first_func)
 			result = 0;
 			break;
 		default:
+			result = 0;
 			break;
 	}
 

@@ -12,7 +12,7 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error);
 
 static int parse_array(mocha_parser* self, mocha_char end_char, mocha_error* error, const mocha_object* array[], size_t array_max_count)
 {
-	int count = 0;
+	size_t count = 0;
 
 	while (count < array_max_count) {
 		mocha_char ch = mocha_char_buffer_skip_space(&self->buffer);
@@ -63,7 +63,7 @@ static const mocha_object* parse_list(mocha_parser* self, mocha_error* error)
 	return o;
 }
 
-static int parse_word(mocha_parser* self, mocha_char* char_buffer, int max_symbol_length, mocha_error* error)
+static int parse_word(mocha_parser* self, mocha_char* char_buffer, size_t max_symbol_length, mocha_error* error)
 {
 	mocha_string word_buffer;
 

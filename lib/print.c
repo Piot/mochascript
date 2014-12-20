@@ -39,7 +39,7 @@ void print_object_debug(string_stream* f, const mocha_object* o);
 
 void print_array_debug(string_stream* f, const mocha_object* objects[], size_t count)
 {
-	for (int i=0; i<count; ++i) {
+	for (size_t i=0; i<count; ++i) {
 		const mocha_object* o = objects[i];
 		print_object_debug(f, o);
 		if (i != count - 1) {

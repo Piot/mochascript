@@ -24,7 +24,7 @@ static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, c
 		const mocha_list* args = &fn->data.function.arguments->data.list;
 		mocha_context* new_context = mocha_context_create(fn->data.function.context);
 		// mocha_context_print_debug("function context:", new_context);
-		int minimum_number_of_arguments = args->count;
+		size_t minimum_number_of_arguments = args->count;
 		mocha_boolean var_args = mocha_false;
 		for (size_t arg_count = 0; arg_count < args->count; ++arg_count) {
 			const mocha_object* arg = args->objects[arg_count];
@@ -162,7 +162,7 @@ const struct mocha_object* mocha_runtime_eval_commands(mocha_runtime* self, cons
 	if (o && o->type == mocha_object_type_list) {
 		const mocha_list* list = &o->data.list;
 		const mocha_object* result;
-		for (int i = 0; i < list->count; ++i) {
+		for (size_t i = 0; i < list->count; ++i) {
 			result = mocha_runtime_eval(self, list->objects[i], error);
 		}
 		return result;

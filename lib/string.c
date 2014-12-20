@@ -11,7 +11,7 @@ mocha_boolean mocha_string_equal_str(const mocha_string* self, const char* cstr)
 	if (self->count != c_len) {
 		return mocha_false;
 	}
-	for (int i=0; i<c_len; ++i) {
+	for (size_t i=0; i<c_len; ++i) {
 		if (s[i] != p[i]) {
 			return mocha_false;
 		}

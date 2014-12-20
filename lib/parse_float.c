@@ -5,7 +5,10 @@
 float mocha_atof(const char* s, mocha_boolean* worked)
 {
 	size_t len = strlen(s);
-	size_t dot_pos = mocha_strchr(s, '.') - s;
+	if (len == 0) {
+		return 0;
+	}
+	int dot_pos = mocha_strchr(s, '.') - s;
 	size_t inverse_dot_pos = (len - 1) - dot_pos;
 	float result = 0;
 	int number_position = -inverse_dot_pos;
@@ -22,7 +25,7 @@ float mocha_atof(const char* s, mocha_boolean* worked)
 	}
 
 	for (int i=len-1; i>=0; --i) {
-		int ch = s[i];
+		const char ch = s[i];
 		if (ch == '-') {
 			negative = mocha_true;
 		} else if (ch == '+') {

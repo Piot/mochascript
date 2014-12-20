@@ -29,4 +29,6 @@ const struct mocha_object* mocha_runtime_eval(mocha_runtime* self, const struct 
 const struct mocha_object* mocha_runtime_eval_symbols(mocha_runtime* self, const struct mocha_object* o, struct mocha_error* error);
 const struct mocha_object* mocha_runtime_eval_commands(mocha_runtime* self, const struct mocha_object* o, mocha_error* error);
 
+void mocha_runtime_add_function(mocha_runtime* self, const char* name, mocha_type_invoke func);
+
 #endif
