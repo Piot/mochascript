@@ -1,0 +1,16 @@
+(def a "prosit")
+
+(defmacro sneeze []
+  `(println a))
+  
+;; What behaviour is desirable?
+;; Current test is following Clojure
+
+(sneeze)
+
+(def a "w00t")
+(sneeze)
+
+---
+prosit
+w00t
