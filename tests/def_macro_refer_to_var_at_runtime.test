@@ -2,7 +2,7 @@
 
 (defmacro sneeze []
   `(println a))
-  
+
 ;; What behaviour is desirable?
 ;; Current test is following Clojure
 
@@ -14,3 +14,4 @@
 ---
 prosit
 w00t
+nil

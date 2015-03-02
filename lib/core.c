@@ -81,7 +81,7 @@ MOCHA_FUNCTION(fn_func)
 static const mocha_object* def(mocha_runtime* runtime, mocha_context* context, const mocha_object* name, const mocha_object* body)
 {
 	const mocha_object* eval = mocha_runtime_eval(runtime, body, &runtime->error);
-	mocha_context_add(context, name, eval);
+	mocha_context_add_or_replace(context, name, eval);
 	return eval;
 }
 
@@ -98,9 +98,7 @@ MOCHA_FUNCTION(defmacro_func)
 	const mocha_object* macro_arguments = arguments->objects[2];
 	const mocha_object* body = arguments->objects[3];
 
-	mocha_runtime_push_context(runtime, context);
 	const mocha_object* new_body = mocha_runtime_eval(runtime, body, &runtime->error);
-	mocha_runtime_pop_context(runtime);
 
 	const mocha_object* macro = mocha_values_create_macro(runtime->values, runtime->context, name, macro_arguments, new_body);
 
