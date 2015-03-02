@@ -123,7 +123,6 @@ const mocha_object* mocha_values_create_macro(mocha_values* self, const struct m
 	static mocha_type macro_type;
 	macro_type.eval_all_arguments = mocha_false;
 	macro_type.invoke = 0;
-	macro_type.is_macro = mocha_true;
 
 	mocha_object* r = mocha_values_create_object(self, mocha_object_type_function);
 	r->object_type = &macro_type;
@@ -189,11 +188,9 @@ void mocha_values_init(mocha_values* self)
 {
 	self->keyword_def.invoke = keyword_func;
 	self->keyword_def.eval_all_arguments = mocha_true;
-	self->keyword_def.is_macro = mocha_false;
 
 	self->map_def.invoke = map_func;
 	self->map_def.eval_all_arguments = mocha_true;
-	self->map_def.is_macro = mocha_false;
 }
 
 const struct mocha_object* mocha_values_create_keyword(mocha_values* self, const mocha_char* s, int count)

@@ -13,7 +13,6 @@ typedef const mocha_object* (*mocha_type_invoke)(struct mocha_runtime* runtime, 
 typedef struct mocha_type {
 	mocha_type_invoke invoke;
 	mocha_boolean eval_all_arguments;
-	mocha_boolean is_macro;
 } mocha_type;
 
 #endif

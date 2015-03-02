@@ -35,20 +35,20 @@ void string_stream_close(string_stream* self)
 	*self->p = 0;
 }
 
-void print_object_debug(string_stream* f, const mocha_object* o);
+void print_object_debug(string_stream* f, const mocha_object* o, mocha_boolean show_quotes);
 
 void print_array_debug(string_stream* f, const mocha_object* objects[], size_t count)
 {
 	for (size_t i=0; i<count; ++i) {
 		const mocha_object* o = objects[i];
-		print_object_debug(f, o);
+		print_object_debug(f, o, mocha_true);
 		if (i != count - 1) {
 			string_stream_output(f, " ");
 		}
 	}
 }
 
-void print_object_debug(string_stream* f, const mocha_object* o)
+void print_object_debug(string_stream* f, const mocha_object* o, mocha_boolean show_quotes)
 {
 	char buf[256];
 
@@ -84,7 +84,11 @@ void print_object_debug(string_stream* f, const mocha_object* o)
 			}
 			break;
 		case mocha_object_type_string:
-			snprintf(buf, 256, "\"%s\"", mocha_string_to_c(&o->data.string));
+			if (show_quotes) {
+				snprintf(buf, 256, "\"%s\"", mocha_string_to_c(&o->data.string));
+			} else {
+				snprintf(buf, 256, "%s", mocha_string_to_c(&o->data.string));
+			}
 			string_stream_output(f, buf);
 			break;
 		case mocha_object_type_keyword:
@@ -112,12 +116,22 @@ void print_object_debug(string_stream* f, const mocha_object* o)
 	}
 }
 
-void mocha_print_object_debug(const mocha_object* o)
+static void internal_print(const mocha_object* o, mocha_boolean show_quotes)
 {
 	string_stream stream;
 	string_stream_init(&stream, 256 * 1024);
-	print_object_debug(&stream, o);
+	print_object_debug(&stream, o, show_quotes);
 	string_stream_close(&stream);
 
 	MOCHA_OUTPUT("%s", stream.buffer);
+}
+
+void mocha_print_object_debug(const mocha_object* o)
+{
+	internal_print(o, mocha_true);
+}
+
+void mocha_print_object_debug_no_quotes(const mocha_object* o)
+{
+	internal_print(o, mocha_false);
 }

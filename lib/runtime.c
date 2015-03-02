@@ -56,9 +56,6 @@ static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, c
 		}
 		mocha_runtime_push_context(self, new_context);
 		o = mocha_runtime_eval(self, fn->data.function.code, &self->error);
-		if (fn->object_type->is_macro) {
-			o = mocha_runtime_eval(self, o, &self->error);
-		}
 		mocha_runtime_pop_context(self);
 	}
 

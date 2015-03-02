@@ -3,7 +3,7 @@
 #include <mocha/runtime.h>
 #include <mocha/values.h>
 #include <mocha/log.h>
-
+#include <mocha/print.h>
 #include <stdlib.h>
 
 MOCHA_FUNCTION(map_fn)
@@ -97,9 +97,17 @@ MOCHA_FUNCTION(defmacro_func)
 	const mocha_object* name = arguments->objects[1];
 	const mocha_object* macro_arguments = arguments->objects[2];
 	const mocha_object* body = arguments->objects[3];
-	const mocha_object* macro = mocha_values_create_macro(runtime->values, runtime->context, name, macro_arguments, body);
 
-	def(runtime, context, name, macro);
+	mocha_runtime_push_context(runtime, context);
+	const mocha_object* new_body = mocha_runtime_eval(runtime, body, &runtime->error);
+	mocha_runtime_pop_context(runtime);
+
+	const mocha_object* macro = mocha_values_create_macro(runtime->values, runtime->context, name, macro_arguments, new_body);
+
+	const mocha_object* result = def(runtime, context, name, macro);
+
+
+	// mocha_print_object_debug(result);
 
 	return macro;
 }
@@ -846,11 +854,19 @@ MOCHA_FUNCTION(nil_func)
 	return result;
 }
 
+MOCHA_FUNCTION(println_func)
+{
+	const mocha_object* argument = arguments->objects[1];
+	mocha_print_object_debug_no_quotes(argument);
+	MOCHA_OUTPUT("\n");
+	return mocha_values_create_nil(runtime->values);
+}
+
 #define MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments) \
 static mocha_type name##_def; \
 name##_def.invoke = name##_func; \
 name##_def.eval_all_arguments = eval_arguments; \
-name##_def.is_macro = mocha_false; \
+
 
 #define MOCHA_DEF_FUNCTION(name, eval_arguments) \
 MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments) \
@@ -863,7 +879,6 @@ mocha_context_add_function(context, values, exported_name, &name##_def);
 void mocha_runtime_add_function(mocha_runtime* self, const char* name, mocha_type_invoke func)
 {
 	mocha_type* internal_function_type = malloc(sizeof(mocha_type));
-	internal_function_type->is_macro = mocha_false;
 	internal_function_type->invoke = func;
 	internal_function_type->eval_all_arguments = mocha_true;
 	mocha_context_add_function(self->context, self->values, name, internal_function_type);
@@ -906,4 +921,5 @@ void mocha_core_define_context(mocha_context* context, mocha_values* values)
 	MOCHA_DEF_FUNCTION(not, mocha_true);
 	MOCHA_DEF_FUNCTION(vec, mocha_true);
 	MOCHA_DEF_FUNCTION(fail, mocha_true);
+	MOCHA_DEF_FUNCTION(println, mocha_true);
 }
