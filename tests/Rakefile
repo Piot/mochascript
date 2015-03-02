@@ -28,7 +28,7 @@ test_files.each do |source_file|
 		f.close
 		array = data.split "---\n"
 		source_text = array[0]
-		expected_output = array[1].strip
+		expected_output = array[1]
 
 
 		output_dir = 'temp/'
@@ -54,7 +54,6 @@ test_files.each do |source_file|
 
 		output_file = File.new output_file
 		output_text = output_file.read
-		output_text.strip!
 		output_file.close
 
 		if expected_output == output_text

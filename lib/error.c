@@ -42,7 +42,7 @@ static const char* error_string(const mocha_error* error, char* buffer)
 void mocha_error_show(mocha_error* self)
 {
 	char buffer[512];
-	MOCHA_LOG("Error %d '%s'", self->code, error_string(self, buffer));
+	MOCHA_OUTPUT("\nError %d '%s'", self->code, error_string(self, buffer));
 }
 
 void mocha_error_init(mocha_error* self)

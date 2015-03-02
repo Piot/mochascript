@@ -1,5 +1,4 @@
 (fail "You failed!")
 ---
-nil 
-
+nil
 Error 6 'Failed: You failed!'

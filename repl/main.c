@@ -42,14 +42,17 @@ static const mocha_object* parse_and_print(mocha_runtime* runtime, mocha_parser*
 
 	if (o && o->type == mocha_object_type_list) {
 		const mocha_list* list = &o->data.list;
+		mocha_boolean printed_before = mocha_false;
 		for (int i = 0; i < list->count; ++i) {
 			const mocha_object* r = mocha_runtime_eval(runtime, list->objects[i], error);
 			if (r && (!print_only_last || i == list->count - 1)) {
+				if (printed_before) {
+					MOCHA_OUTPUT(" ");
+				}
 				mocha_print_object_debug(r);
-				MOCHA_OUTPUT(" ");
+				printed_before = mocha_true;
 			}
 		}
-		MOCHA_LOG("");
 	} else {
 		o = 0;
 	}
@@ -98,7 +101,6 @@ static const mocha_object* eval_file(mocha_runtime* runtime, mocha_parser* parse
 	temp_input[character_count] = 0;
 	mocha_parser_init(parser, runtime->values, runtime->context, temp_input, character_count);
 	const mocha_object* o = parse_and_print(runtime, parser, mocha_true, error);
-	MOCHA_LOG("");
 	free(temp_input);
 	free(temp_buffer);
 

@@ -1,4 +1,3 @@
 (and :truthy false 42)
 ---
 false
-

@@ -1,4 +1,3 @@
 (and "hello" :world)
 ---
 :world
-
