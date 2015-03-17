@@ -1,0 +1,16 @@
+(defn ignore-first-arg [a b]
+  b)
+
+(defmacro once []
+  (ignore-first-arg (println "COMPILED") (fn [x] (+ x 10))))
+
+(def x (once))
+
+(println (x 3)) ; the code of the x is just the code (fn [x] (+ x 10)), nothing else
+(println (x 7))
+
+---
+COMPILED
+13
+17
+nil
