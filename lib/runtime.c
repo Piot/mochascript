@@ -92,14 +92,17 @@ void mocha_runtime_pop_context(mocha_runtime* self)
 	self->context = self->contexts[self->stack_depth];
 }
 
-const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const struct mocha_object* o, mocha_error* error, mocha_boolean eval_symbols)
+const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const struct mocha_object* o, mocha_error* error, mocha_boolean eval_symbols, mocha_boolean unqoutes_only)
 {
+	MOCHA_LOG("Eval:'");
+	mocha_print_object_debug(o);
+	MOCHA_LOG("'");
 	if (o->type == mocha_object_type_list) {
 		const mocha_list* l = &o->data.list;
 		if (l->count == 0) {
 			return o;
 		}
-		const struct mocha_object* fn = mocha_runtime_eval(self, l->objects[0], error);
+		const struct mocha_object* fn = mocha_runtime_eval_ex(self, l->objects[0], error, eval_symbols, unqoutes_only);
 		if (!fn) {
 			MOCHA_LOG("Couldn't find lookup:");
 			mocha_print_object_debug(l->objects[0]);
@@ -111,10 +114,11 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 		}
 		mocha_list new_args;
 		if (should_evaluate_arguments) {
+			MOCHA_LOG("Should evaluate arguments");
 			const mocha_object* converted_args[32];
 			converted_args[0] = fn;
 			for (size_t i = 1; i < l->count; ++i) {
-				const struct mocha_object* arg = mocha_runtime_eval(self, l->objects[i], error);
+				const struct mocha_object* arg = mocha_runtime_eval_ex(self, l->objects[i], error, eval_symbols, unqoutes_only);
 				if (!arg) {
 					MOCHA_LOG("Couldn't evaluate:");
 					mocha_print_object_debug(l->objects[i]);
@@ -125,8 +129,12 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 			mocha_list_init(&new_args, converted_args, l->count);
 			l = &new_args;
 		}
+
+		MOCHA_LOG("Invoke!");
+
 		o = invoke(self, self->context, fn, l);
 		if (!o) {
+			MOCHA_LOG("Invoke failed!");
 			mocha_print_object_debug(fn);
 		}
 	} else {
@@ -134,7 +142,7 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 			const mocha_map* m = &o->data.map;
 			const mocha_object* converted_args[32];
 			for (size_t i = 0; i < m->count; ++i) {
-				const struct mocha_object* arg = mocha_runtime_eval(self, m->objects[i], error);
+				const struct mocha_object* arg = mocha_runtime_eval_ex(self, m->objects[i], error, eval_symbols, unqoutes_only);
 				if (!arg) {
 					MOCHA_LOG("Couldn't evaluate:");
 					mocha_print_object_debug(m->objects[i]);
@@ -144,9 +152,22 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 			}
 			o = mocha_values_create_map(self->values, converted_args, m->count);
 		} else if (o->type == mocha_object_type_symbol) {
-			o = mocha_context_lookup(self->context, o);
-			if (eval_symbols && o) {
-				o = mocha_runtime_eval(self, o, error);
+			if (eval_symbols) {
+				MOCHA_LOG("Symbol lookup!");
+				const mocha_object* looked_up_value = mocha_context_lookup(self->context, o);
+				if (!looked_up_value) {
+					MOCHA_LOG("Couldn't lookup:");
+					mocha_print_object_debug(o);
+					return 0;
+				}
+				o = looked_up_value;
+				if (eval_symbols) {
+					if ((unqoutes_only && o->object_type->unquote_fix) || !unqoutes_only) {
+						o = mocha_runtime_eval_ex(self, o, error, eval_symbols, unqoutes_only);
+					}
+				}
+			} else {
+				MOCHA_LOG("Symbol keep!");
 			}
 		}
 	}
@@ -168,12 +189,32 @@ const struct mocha_object* mocha_runtime_eval_commands(mocha_runtime* self, cons
 	MOCHA_ERR(mocha_error_code_expected_list);
 }
 
+
 const struct mocha_object* mocha_runtime_eval(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
 {
-	return mocha_runtime_eval_ex(self, o, error, mocha_false);
+	return mocha_runtime_eval_ex(self, o, error, mocha_false, mocha_false);
 }
 
 const struct mocha_object* mocha_runtime_eval_symbols(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
 {
-	return mocha_runtime_eval_ex(self, o, error, mocha_true);
+	return mocha_runtime_eval_ex(self, o, error, mocha_true, mocha_false);
+}
+
+const struct mocha_object* mocha_runtime_eval_only_unquotes(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
+{
+	return mocha_runtime_eval_ex(self, o, error, mocha_false, mocha_true);
+}
+
+const struct mocha_object* mocha_runtime_eval_unquotes(mocha_runtime* self, const struct mocha_object* o, mocha_error* error)
+{
+	if (o && o->type == mocha_object_type_list) {
+		const mocha_object* temp[100];
+		const mocha_list* list = &o->data.list;
+		const mocha_object* result;
+		for (size_t i = 0; i < list->count; ++i) {
+			temp[i] = mocha_runtime_eval_only_unquotes(self, list->objects[i], error);
+		}
+		return mocha_values_create_list(self->values, temp, list->count);
+	}
+	MOCHA_ERR(mocha_error_code_expected_list);
 }

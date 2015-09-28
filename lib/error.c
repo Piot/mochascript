@@ -30,6 +30,9 @@ static const char* error_string(const mocha_error* error, char* buffer)
 		case mocha_error_code_expected_list:
 			s = "Expected a list";
 			break;
+		case mocha_error_code_type_mismatch:
+			s = "Type mismatch";
+			break;
 		case mocha_error_code_fail:
 			sprintf(buffer, "Failed: %s", error->string);
 			s = buffer;

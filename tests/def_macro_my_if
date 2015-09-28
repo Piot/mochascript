@@ -1,0 +1,11 @@
+(defmacro my-if (condition then else)
+  `(cond (,condition ,then)
+         (t ,else)))
+
+(defun fak (n)
+  (my-if (= n 0) 1
+         (* n (fak (- n 1)))))
+
+(fak 10)
+---
+3628800

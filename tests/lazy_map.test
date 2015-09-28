@@ -1,0 +1,19 @@
+(defn print-inc [n]
+  (println ".")
+  (inc n))
+
+(def nums (map print-inc [1 2 3]))
+"before"
+nums
+"second"
+nums
+---
+#'user/print-inc
+#'user/nums
+"before"
+.
+.
+.
+(2 3 4)
+"second"
+(2 3 4)

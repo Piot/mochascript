@@ -55,6 +55,8 @@ MOCHA_FUNCTION(vec_func)
 			r = mocha_values_create_vector(runtime->values, 0, 0);
 			break;
 		default:
+			MOCHA_LOG("ERROR UNKNOWN TYPE");
+			mocha_print_object_debug(sequence);
 			r = 0;
 	}
 
@@ -739,14 +741,26 @@ MOCHA_FUNCTION(first_func)
 
 MOCHA_FUNCTION(quote_func)
 {
-	return arguments->objects[1];
+	const mocha_object* argument = arguments->objects[1];
+	const mocha_object* ret =  mocha_runtime_eval_unquotes(runtime, argument, &runtime->error);
+
+	return ret;
+}
+
+MOCHA_FUNCTION(syntax_quote_func)
+{
+	MOCHA_LOG("Syntax quote called!");
+	mocha_print_object_debug(arguments->objects[1]);
+	MOCHA_LOG("---");
+	const mocha_object* ret =  mocha_runtime_eval_unquotes(runtime, arguments->objects[1], &runtime->error);
+
+	return ret;
 }
 
 MOCHA_FUNCTION(unquote_func)
 {
-	// MOCHA_LOG("Unquoting:");
-	// mocha_print_object_debug(arguments->objects[1]);
-	return mocha_runtime_eval_symbols(runtime, arguments->objects[1], &runtime->error);
+	const mocha_object* ret = mocha_runtime_eval_symbols(runtime, arguments->objects[1], &runtime->error);
+	return ret;
 }
 
 MOCHA_FUNCTION(zero_func)
@@ -874,6 +888,11 @@ mocha_context_add_function(context, values, #name, &name##_def);
 MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments) \
 mocha_context_add_function(context, values, exported_name, &name##_def);
 
+
+#define MOCHA_DEF_FUNCTION_UNQUOTE_FIX(name, eval_arguments) \
+	MOCHA_DEF_FUNCTION(name, eval_arguments); \
+	name##_def.unquote_fix = mocha_true;
+
 void mocha_runtime_add_function(mocha_runtime* self, const char* name, mocha_type_invoke func)
 {
 	mocha_type* internal_function_type = malloc(sizeof(mocha_type));
@@ -915,7 +934,8 @@ void mocha_core_define_context(mocha_context* context, mocha_values* values)
 	MOCHA_DEF_FUNCTION(if, mocha_false);
 	MOCHA_DEF_FUNCTION(case, mocha_false);
 	MOCHA_DEF_FUNCTION(quote, mocha_false);
-	MOCHA_DEF_FUNCTION(unquote, mocha_false);
+	MOCHA_DEF_FUNCTION_EX(syntax_quote, "syntax-quote", mocha_false);
+	MOCHA_DEF_FUNCTION_UNQUOTE_FIX(unquote, mocha_false);
 	MOCHA_DEF_FUNCTION(not, mocha_true);
 	MOCHA_DEF_FUNCTION(vec, mocha_true);
 	MOCHA_DEF_FUNCTION(fail, mocha_true);

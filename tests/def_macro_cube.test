@@ -1,0 +1,6 @@
+(defmacro cube [x]
+    `(* ~x ~x ~x))
+
+(macroexpand-1 '(cube (inc n)))
+---
+(* (inc n) (inc n) (inc n))

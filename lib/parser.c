@@ -199,12 +199,12 @@ static const mocha_object* parse_unquote(mocha_parser* self, mocha_error* error)
 	return l;
 }
 
-static const mocha_object* parse_tick(mocha_parser* self, mocha_error* error)
+static const mocha_object* parse_tick_ex(mocha_parser* self, mocha_error* error, const char* name)
 {
 	const mocha_object* do_not_eval = parse_object(self, error);
 
 	mocha_string temp_string;
-	mocha_string_init_from_c(&temp_string, "quote");
+	mocha_string_init_from_c(&temp_string, name);
 	const mocha_object* quote_symbol = create_symbol(self->values, &temp_string);
 
 	const mocha_object* args[2];
@@ -216,6 +216,17 @@ static const mocha_object* parse_tick(mocha_parser* self, mocha_error* error)
 
 	return l;
 }
+
+static const mocha_object* parse_tick(mocha_parser* self, mocha_error* error)
+{
+	return parse_tick_ex(self, error, "quote");
+}
+
+static const mocha_object* parse_backtick(mocha_parser* self, mocha_error* error)
+{
+	return parse_tick_ex(self, error, "syntax-quote");
+}
+
 
 
 static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
@@ -241,8 +252,10 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 			o = parse_list(self, error);
 			break;
 		case '\'':
-		case '`':
 			o = parse_tick(self, error);
+			break;
+		case '`':
+			o = parse_backtick(self, error);
 			break;
 		case '~':
 			o = parse_unquote(self, error);
