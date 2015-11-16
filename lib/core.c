@@ -19,18 +19,18 @@ MOCHA_FUNCTION(map_fn)
 	const mocha_object* result = 0;
 
 	switch (sequence->type) {
-	case mocha_object_type_list:
-		result = 0;
-		break;
-	case mocha_object_type_vector:
-		break;
-	case mocha_object_type_nil:
-		result = 0;
-		break;
-	case mocha_object_type_map:
-		break;
-	default:
-		break;
+		case mocha_object_type_list:
+			result = 0;
+			break;
+		case mocha_object_type_vector:
+			break;
+		case mocha_object_type_nil:
+			result = 0;
+			break;
+		case mocha_object_type_map:
+			break;
+		default:
+			break;
 	}
 
 	return result;
@@ -42,25 +42,25 @@ MOCHA_FUNCTION(vec_func)
 
 	const mocha_object* r;
 	switch (sequence->type) {
-	case mocha_object_type_vector:
-		r = sequence;
-		break;
-	case mocha_object_type_list:
-		r = mocha_values_create_vector(runtime->values, sequence->data.list.objects, sequence->data.list.count);
-		break;
-	case mocha_object_type_map: {
-		const mocha_map* map = &sequence->data.map;
-		const mocha_object* objects[64];
-		for (size_t i = 0; i < map->count; i += 2) {
-			objects[i / 2] = mocha_values_create_vector(runtime->values, &map->objects[i], 2);
-		}
-		r = mocha_values_create_vector(runtime->values, objects, map->count / 2);
-	} break;
-	case mocha_object_type_nil:
-		r = mocha_values_create_vector(runtime->values, 0, 0);
-		break;
-	default:
-		r = 0;
+		case mocha_object_type_vector:
+			r = sequence;
+			break;
+		case mocha_object_type_list:
+			r = mocha_values_create_vector(runtime->values, sequence->data.list.objects, sequence->data.list.count);
+			break;
+		case mocha_object_type_map: {
+			const mocha_map* map = &sequence->data.map;
+			const mocha_object* objects[64];
+			for (size_t i = 0; i < map->count; i += 2) {
+				objects[i / 2] = mocha_values_create_vector(runtime->values, &map->objects[i], 2);
+			}
+			r = mocha_values_create_vector(runtime->values, objects, map->count / 2);
+		} break;
+		case mocha_object_type_nil:
+			r = mocha_values_create_vector(runtime->values, 0, 0);
+			break;
+		default:
+			r = 0;
 	}
 
 	return r;
@@ -291,14 +291,14 @@ MOCHA_FUNCTION(dec_func)
 	const mocha_object* argument = arguments->objects[1];
 	if (argument->type == mocha_object_type_number) {
 		switch (argument->data.number.type) {
-		case mocha_number_type_integer:
-			v.type = mocha_number_type_integer;
-			v.data.i = argument->data.number.data.i - 1;
-			break;
-		case mocha_number_type_float:
-			v.type = mocha_number_type_float;
-			v.data.f = argument->data.number.data.f - 1.0f;
-			break;
+			case mocha_number_type_integer:
+				v.type = mocha_number_type_integer;
+				v.data.i = argument->data.number.data.i - 1;
+				break;
+			case mocha_number_type_float:
+				v.type = mocha_number_type_float;
+				v.data.f = argument->data.number.data.f - 1.0f;
+				break;
 		}
 	}
 
@@ -319,14 +319,14 @@ MOCHA_FUNCTION(inc_func)
 	const mocha_object* argument = arguments->objects[1];
 	if (argument->type == mocha_object_type_number) {
 		switch (argument->data.number.type) {
-		case mocha_number_type_integer:
-			v.type = mocha_number_type_integer;
-			v.data.i = argument->data.number.data.i + 1;
-			break;
-		case mocha_number_type_float:
-			v.type = mocha_number_type_float;
-			v.data.f = argument->data.number.data.f + 1.0f;
-			break;
+			case mocha_number_type_integer:
+				v.type = mocha_number_type_integer;
+				v.data.i = argument->data.number.data.i + 1;
+				break;
+			case mocha_number_type_float:
+				v.type = mocha_number_type_float;
+				v.data.f = argument->data.number.data.f + 1.0f;
+				break;
 		}
 	}
 
@@ -575,21 +575,21 @@ MOCHA_FUNCTION(conj_func)
 	const mocha_object* sequence = arguments->objects[1];
 	const mocha_object* result;
 	switch (sequence->type) {
-	case mocha_object_type_list:
-		result = conj_list(runtime->values, &sequence->data.list, &arguments->objects[2], arguments->count - 2);
-		break;
-	case mocha_object_type_vector:
-		result = conj_vector(runtime->values, &sequence->data.vector, &arguments->objects[2], arguments->count - 2);
-		break;
-	case mocha_object_type_nil:
-		result = conj_list(runtime->values, 0, &arguments->objects[2], arguments->count - 2);
-		break;
-	case mocha_object_type_map:
-		result = conj_map(runtime->values, &sequence->data.map, &arguments->objects[2]->data.map);
-		break;
-	default:
-		result = 0;
-		break;
+		case mocha_object_type_list:
+			result = conj_list(runtime->values, &sequence->data.list, &arguments->objects[2], arguments->count - 2);
+			break;
+		case mocha_object_type_vector:
+			result = conj_vector(runtime->values, &sequence->data.vector, &arguments->objects[2], arguments->count - 2);
+			break;
+		case mocha_object_type_nil:
+			result = conj_list(runtime->values, 0, &arguments->objects[2], arguments->count - 2);
+			break;
+		case mocha_object_type_map:
+			result = conj_map(runtime->values, &sequence->data.map, &arguments->objects[2]->data.map);
+			break;
+		default:
+			result = 0;
+			break;
 	}
 
 	return result;
@@ -624,22 +624,22 @@ MOCHA_FUNCTION(cons_func)
 	const mocha_object* sequence = arguments->objects[2];
 	const mocha_object* result;
 	switch (sequence->type) {
-	case mocha_object_type_list:
-		result = cons_list(runtime->values, &sequence->data.list, &arguments->objects[1]);
-		break;
-	case mocha_object_type_vector:
-		result = cons_vector(runtime->values, &sequence->data.vector, &arguments->objects[1]);
-		break;
-	case mocha_object_type_nil: {
-		result = mocha_values_create_list(runtime->values, &arguments->objects[1], 1);
-	} break;
-	case mocha_object_type_map:
-		MOCHA_LOG("BAD MAP");
-		result = 0;
-		break;
-	default:
-		result = 0;
-		break;
+		case mocha_object_type_list:
+			result = cons_list(runtime->values, &sequence->data.list, &arguments->objects[1]);
+			break;
+		case mocha_object_type_vector:
+			result = cons_vector(runtime->values, &sequence->data.vector, &arguments->objects[1]);
+			break;
+		case mocha_object_type_nil: {
+			result = mocha_values_create_list(runtime->values, &arguments->objects[1], 1);
+		} break;
+		case mocha_object_type_map:
+			MOCHA_LOG("BAD MAP");
+			result = 0;
+			break;
+		default:
+			result = 0;
+			break;
 	}
 
 	return result;
@@ -680,21 +680,21 @@ MOCHA_FUNCTION(rest_func)
 	const mocha_object* sequence = arguments->objects[1];
 	const mocha_object* result;
 	switch (sequence->type) {
-	case mocha_object_type_list:
-		result = rest_list(runtime->values, &sequence->data.list);
-		break;
-	case mocha_object_type_vector:
-		result = rest_vector(runtime->values, &sequence->data.vector);
-		break;
-	case mocha_object_type_nil:
-		result = mocha_values_create_list(runtime->values, 0, 0);
-		break;
-	case mocha_object_type_map:
-		result = 0;
-		break;
-	default:
-		result = 0;
-		break;
+		case mocha_object_type_list:
+			result = rest_list(runtime->values, &sequence->data.list);
+			break;
+		case mocha_object_type_vector:
+			result = rest_vector(runtime->values, &sequence->data.vector);
+			break;
+		case mocha_object_type_nil:
+			result = mocha_values_create_list(runtime->values, 0, 0);
+			break;
+		case mocha_object_type_map:
+			result = 0;
+			break;
+		default:
+			result = 0;
+			break;
 	}
 
 	return result;
@@ -715,21 +715,21 @@ MOCHA_FUNCTION(first_func)
 	const mocha_object* sequence = arguments->objects[1];
 	const mocha_object* result;
 	switch (sequence->type) {
-	case mocha_object_type_list:
-		result = first_list(runtime->values, &sequence->data.list);
-		break;
-	case mocha_object_type_vector:
-		result = first_vector(runtime->values, &sequence->data.vector);
-		break;
-	case mocha_object_type_nil:
-		result = sequence;
-		break;
-	case mocha_object_type_map:
-		result = 0;
-		break;
-	default:
-		result = 0;
-		break;
+		case mocha_object_type_list:
+			result = first_list(runtime->values, &sequence->data.list);
+			break;
+		case mocha_object_type_vector:
+			result = first_vector(runtime->values, &sequence->data.vector);
+			break;
+		case mocha_object_type_nil:
+			result = sequence;
+			break;
+		case mocha_object_type_map:
+			result = 0;
+			break;
+		default:
+			result = 0;
+			break;
 	}
 
 	return result;
@@ -753,12 +753,12 @@ MOCHA_FUNCTION(zero_func)
 	const mocha_object* argument = arguments->objects[1];
 	if (argument->type == mocha_object_type_number) {
 		switch (argument->data.number.type) {
-		case mocha_number_type_integer:
-			b = argument->data.number.data.i == 0;
-			break;
-		case mocha_number_type_float:
-			b = argument->data.number.data.f == 0.0f;
-			break;
+			case mocha_number_type_integer:
+				b = argument->data.number.data.i == 0;
+				break;
+			case mocha_number_type_float:
+				b = argument->data.number.data.f == 0.0f;
+				break;
 		}
 	}
 
@@ -783,19 +783,19 @@ MOCHA_FUNCTION(count_func)
 
 	size_t count = 0;
 	switch (sequence->type) {
-	case mocha_object_type_list:
-		count = sequence->data.list.count;
-		break;
-	case mocha_object_type_vector:
-		count = sequence->data.vector.count;
-		break;
-	case mocha_object_type_nil:
-		break;
-	case mocha_object_type_map:
-		count = sequence->data.map.count;
-		break;
-	default:
-		break;
+		case mocha_object_type_list:
+			count = sequence->data.list.count;
+			break;
+		case mocha_object_type_vector:
+			count = sequence->data.vector.count;
+			break;
+		case mocha_object_type_nil:
+			break;
+		case mocha_object_type_map:
+			count = sequence->data.map.count;
+			break;
+		default:
+			break;
 	}
 
 	const mocha_object* o = mocha_values_create_integer(runtime->values, (int) count);
@@ -821,18 +821,18 @@ MOCHA_FUNCTION(empty_func)
 	mocha_boolean is_empty = mocha_true;
 
 	switch (sequence->type) {
-	case mocha_object_type_list:
-		is_empty = sequence->data.list.count == 0;
-		break;
-	case mocha_object_type_vector:
-		is_empty = sequence->data.vector.count == 0;
-		break;
-	case mocha_object_type_nil:
-		break;
-	case mocha_object_type_map:
-		break;
-	default:
-		break;
+		case mocha_object_type_list:
+			is_empty = sequence->data.list.count == 0;
+			break;
+		case mocha_object_type_vector:
+			is_empty = sequence->data.vector.count == 0;
+			break;
+		case mocha_object_type_nil:
+			break;
+		case mocha_object_type_map:
+			break;
+		default:
+			break;
 	}
 
 	const mocha_object* empty = mocha_values_create_boolean(runtime->values, is_empty);

@@ -53,66 +53,66 @@ void print_object_debug(string_stream* f, const mocha_object* o, mocha_boolean s
 	char buf[256];
 
 	switch (o->type) {
-	case mocha_object_type_nil:
-		string_stream_output(f, "nil");
-		break;
-	case mocha_object_type_list:
-		string_stream_output(f, "(");
-		print_array_debug(f, o->data.list.objects, o->data.list.count);
-		string_stream_output(f, ")");
-		break;
-	case mocha_object_type_vector:
-		string_stream_output(f, "[");
-		print_array_debug(f, o->data.vector.objects, o->data.vector.count);
-		string_stream_output(f, "]");
-		break;
-	case mocha_object_type_map:
-		string_stream_output(f, "{");
-		print_array_debug(f, o->data.map.objects, o->data.map.count);
-		string_stream_output(f, "}");
-		break;
-	case mocha_object_type_number:
-		switch (o->data.number.type) {
-		case mocha_number_type_integer:
-			snprintf(buf, 256, "%d", o->data.number.data.i);
+		case mocha_object_type_nil:
+			string_stream_output(f, "nil");
+			break;
+		case mocha_object_type_list:
+			string_stream_output(f, "(");
+			print_array_debug(f, o->data.list.objects, o->data.list.count);
+			string_stream_output(f, ")");
+			break;
+		case mocha_object_type_vector:
+			string_stream_output(f, "[");
+			print_array_debug(f, o->data.vector.objects, o->data.vector.count);
+			string_stream_output(f, "]");
+			break;
+		case mocha_object_type_map:
+			string_stream_output(f, "{");
+			print_array_debug(f, o->data.map.objects, o->data.map.count);
+			string_stream_output(f, "}");
+			break;
+		case mocha_object_type_number:
+			switch (o->data.number.type) {
+				case mocha_number_type_integer:
+					snprintf(buf, 256, "%d", o->data.number.data.i);
+					string_stream_output(f, buf);
+					break;
+				case mocha_number_type_float:
+					snprintf(buf, 256, "%f", o->data.number.data.f);
+					string_stream_output(f, buf);
+					break;
+			}
+			break;
+		case mocha_object_type_string:
+			if (show_quotes) {
+				snprintf(buf, 256, "\"%s\"", mocha_string_to_c(&o->data.string));
+			} else {
+				snprintf(buf, 256, "%s", mocha_string_to_c(&o->data.string));
+			}
 			string_stream_output(f, buf);
 			break;
-		case mocha_number_type_float:
-			snprintf(buf, 256, "%f", o->data.number.data.f);
+		case mocha_object_type_keyword:
+			snprintf(buf, 256, ":%s", mocha_string_to_c(o->data.keyword.string));
 			string_stream_output(f, buf);
 			break;
-		}
-		break;
-	case mocha_object_type_string:
-		if (show_quotes) {
-			snprintf(buf, 256, "\"%s\"", mocha_string_to_c(&o->data.string));
-		} else {
-			snprintf(buf, 256, "%s", mocha_string_to_c(&o->data.string));
-		}
-		string_stream_output(f, buf);
-		break;
-	case mocha_object_type_keyword:
-		snprintf(buf, 256, ":%s", mocha_string_to_c(o->data.keyword.string));
-		string_stream_output(f, buf);
-		break;
-	case mocha_object_type_boolean:
-		string_stream_output(f, o->data.b ? "true" : "false");
-		break;
-	case mocha_object_type_symbol:
-		snprintf(buf, 256, "%s", mocha_string_to_c(o->data.symbol.string));
-		string_stream_output(f, buf);
-		break;
-	case mocha_object_type_function:
-		string_stream_output(f, "fn");
-		break;
-	case mocha_object_type_internal_function:
-		snprintf(buf, 256, "internalfn: '%s'", o->debug_string);
-		string_stream_output(f, buf);
-		break;
-	default:
-		snprintf(buf, 256, "TYPE '%d'", o->type);
-		string_stream_output(f, buf);
-		break;
+		case mocha_object_type_boolean:
+			string_stream_output(f, o->data.b ? "true" : "false");
+			break;
+		case mocha_object_type_symbol:
+			snprintf(buf, 256, "%s", mocha_string_to_c(o->data.symbol.string));
+			string_stream_output(f, buf);
+			break;
+		case mocha_object_type_function:
+			string_stream_output(f, "fn");
+			break;
+		case mocha_object_type_internal_function:
+			snprintf(buf, 256, "internalfn: '%s'", o->debug_string);
+			string_stream_output(f, buf);
+			break;
+		default:
+			snprintf(buf, 256, "TYPE '%d'", o->type);
+			string_stream_output(f, buf);
+			break;
 	}
 }
 

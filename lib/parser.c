@@ -223,52 +223,52 @@ static const mocha_object* parse_object(mocha_parser* self, mocha_error* error)
 
 	mocha_char first_char = mocha_char_buffer_skip_space(&self->buffer);
 	switch (first_char) {
-	case 0:
-		MOCHA_LOG("END!");
-		o = 0;
-		break;
-	case ':':
-		o = parse_keyword(self, error);
-		break;
-	case '{':
-		o = parse_map(self, error);
-		break;
-	case '[':
-		o = parse_vector(self, error);
-		break;
-	case '(':
-		o = parse_list(self, error);
-		break;
-	case '\'':
-	case '`':
-		o = parse_tick(self, error);
-		break;
-	case '~':
-		o = parse_unquote(self, error);
-		break;
-	case '\"':
-		o = parse_string(self, error);
-		break;
-	default:
-		if (first_char == '-' || first_char == '+') {
-			mocha_char ch = mocha_char_buffer_read_char(&self->buffer);
-			mocha_char_buffer_unread_char(&self->buffer, ch);
-			mocha_char_buffer_unread_char(&self->buffer, first_char);
-			if (mocha_char_is_numerical(ch)) {
+		case 0:
+			MOCHA_LOG("END!");
+			o = 0;
+			break;
+		case ':':
+			o = parse_keyword(self, error);
+			break;
+		case '{':
+			o = parse_map(self, error);
+			break;
+		case '[':
+			o = parse_vector(self, error);
+			break;
+		case '(':
+			o = parse_list(self, error);
+			break;
+		case '\'':
+		case '`':
+			o = parse_tick(self, error);
+			break;
+		case '~':
+			o = parse_unquote(self, error);
+			break;
+		case '\"':
+			o = parse_string(self, error);
+			break;
+		default:
+			if (first_char == '-' || first_char == '+') {
+				mocha_char ch = mocha_char_buffer_read_char(&self->buffer);
+				mocha_char_buffer_unread_char(&self->buffer, ch);
+				mocha_char_buffer_unread_char(&self->buffer, first_char);
+				if (mocha_char_is_numerical(ch)) {
+					o = parse_number(self, error);
+				} else {
+					o = parse_symbol(self, error);
+				}
+			} else if (mocha_char_is_numerical(first_char)) {
+				mocha_char_buffer_unread_char(&self->buffer, first_char);
 				o = parse_number(self, error);
-			} else {
+			} else if (mocha_char_is_alpha(first_char)) {
+				mocha_char_buffer_unread_char(&self->buffer, first_char);
 				o = parse_symbol(self, error);
+			} else {
+				MOCHA_LOG("'%d' %c", first_char, first_char);
+				MOCHA_ERR(mocha_error_code_unexpected_character);
 			}
-		} else if (mocha_char_is_numerical(first_char)) {
-			mocha_char_buffer_unread_char(&self->buffer, first_char);
-			o = parse_number(self, error);
-		} else if (mocha_char_is_alpha(first_char)) {
-			mocha_char_buffer_unread_char(&self->buffer, first_char);
-			o = parse_symbol(self, error);
-		} else {
-			MOCHA_LOG("'%d' %c", first_char, first_char);
-			MOCHA_ERR(mocha_error_code_unexpected_character);
-		}
 	}
 
 	return o;

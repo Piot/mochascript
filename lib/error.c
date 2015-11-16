@@ -6,34 +6,34 @@ static const char* error_string(const mocha_error* error, char* buffer)
 	const char* s;
 
 	switch (error->code) {
-	case mocha_error_code_unexpected_end:
-		s = "Unexpected end";
-		break;
-	case mocha_error_code_ok:
-		s = "No error";
-		break;
-	case mocha_error_code_symbol_too_long:
-		s = "Symbol is too long";
-		break;
-	case mocha_error_code_missing_end_of_string:
-		s = "Missing end of string";
-		break;
-	case mocha_error_code_unexpected_character:
-		s = "Unexpected character";
-		break;
-	case mocha_error_code_file_not_found:
-		s = "File not found";
-		break;
-	case mocha_error_code_illegal_float_number:
-		s = "Illegal float number";
-		break;
-	case mocha_error_code_expected_list:
-		s = "Expected a list";
-		break;
-	case mocha_error_code_fail:
-		sprintf(buffer, "Failed: %s", error->string);
-		s = buffer;
-		break;
+		case mocha_error_code_unexpected_end:
+			s = "Unexpected end";
+			break;
+		case mocha_error_code_ok:
+			s = "No error";
+			break;
+		case mocha_error_code_symbol_too_long:
+			s = "Symbol is too long";
+			break;
+		case mocha_error_code_missing_end_of_string:
+			s = "Missing end of string";
+			break;
+		case mocha_error_code_unexpected_character:
+			s = "Unexpected character";
+			break;
+		case mocha_error_code_file_not_found:
+			s = "File not found";
+			break;
+		case mocha_error_code_illegal_float_number:
+			s = "Illegal float number";
+			break;
+		case mocha_error_code_expected_list:
+			s = "Expected a list";
+			break;
+		case mocha_error_code_fail:
+			sprintf(buffer, "Failed: %s", error->string);
+			s = buffer;
+			break;
 	}
 
 	return s;
