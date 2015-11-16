@@ -8,8 +8,50 @@
 #include <stdio.h>
 #include <mocha/log.h>
 
+#include <unistd.h>
+#include <termios.h>
 
 #include <stdlib.h>
+
+void init_ncurses()
+{
+	struct termios oldt, newt;
+
+	/*tcgetattr gets the parameters of the current terminal
+	STDIN_FILENO will tell tcgetattr that it should write the settings
+	of stdin to oldt*/
+	tcgetattr(STDIN_FILENO, &oldt);
+	/*now the settings will be copied*/
+	newt = oldt;
+
+	/*ICANON normally takes care that one line at a time will be processed
+	that means it will return if it sees a "\n" or an EOF or an EOL*/
+	newt.c_lflag &= ~(ICANON | ECHO);
+
+	/*Those new settings will be set to STDIN
+	TCSANOW tells tcsetattr to change attributes immediately. */
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+}
+
+void close_ncurses()
+{
+	struct termios oldt, newt;
+
+	/*tcgetattr gets the parameters of the current terminal
+	STDIN_FILENO will tell tcgetattr that it should write the settings
+	of stdin to oldt*/
+	tcgetattr(STDIN_FILENO, &oldt);
+	/*now the settings will be copied*/
+	newt = oldt;
+
+	/*ICANON normally takes care that one line at a time will be processed
+	that means it will return if it sees a "\n" or an EOF or an EOL*/
+	newt.c_lflag |= (ICANON | ECHO);
+
+	/*Those new settings will be set to STDIN
+	TCSANOW tells tcsetattr to change attributes immediately. */
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+}
 
 int read_line(mocha_char* s, int max_length)
 {
@@ -25,17 +67,42 @@ int read_line(mocha_char* s, int max_length)
 		if (c_char == EOF) {
 			return EOF;
 		}
-		s[input_length] = c_char;
-		++input_length;
+		if (c_char == 27) {
+			int key_char = fgetc(stdin);
+			if (key_char == '[') {
+				key_char = fgetc(stdin);
+				if (key_char == 'A') {
+					c_char = 'U';
+				}
+			}
+		}
+		if (c_char == 127) {
+			if (input_length) {
+				--input_length;
+				s[input_length] = 0;
+				putc(8, stdout);
+				putc(32, stdout);
+				c_char = 8;
+			} else {
+				c_char = 0;
+			}
+		} else {
+			s[input_length] = c_char;
+			++input_length;
+		}
 		if (c_char == 10) {
 			break;
+		}
+		if (c_char) {
+			putc(c_char, stdout);
 		}
 	}
 
 	return input_length;
 }
 
-static const mocha_object* parse_and_print(mocha_runtime* runtime, mocha_parser* parser, mocha_boolean print_only_last, mocha_error* error)
+static const mocha_object* parse_and_print(mocha_runtime* runtime, mocha_parser* parser, mocha_boolean print_only_last,
+										   mocha_error* error)
 {
 	const mocha_object* o = mocha_parser_parse(parser, error);
 	runtime->context = parser->context;
@@ -53,6 +120,9 @@ static const mocha_object* parse_and_print(mocha_runtime* runtime, mocha_parser*
 				printed_before = mocha_true;
 			}
 		}
+		if (list->count > 0) {
+			MOCHA_LOG("");
+		}
 	} else {
 		o = 0;
 	}
@@ -68,6 +138,7 @@ static void repl(mocha_runtime* runtime, mocha_parser* parser, mocha_error* erro
 	while (1) {
 		MOCHA_OUTPUT("repl=> ");
 		int input_length = read_line(input, max_length);
+		MOCHA_LOG("");
 		if (input_length == EOF) {
 			MOCHA_LOG("EOF");
 			break;
@@ -77,10 +148,10 @@ static void repl(mocha_runtime* runtime, mocha_parser* parser, mocha_error* erro
 
 		const mocha_object* o;
 		o = parse_and_print(runtime, parser, mocha_false, error);
-
 		if (error->code != mocha_error_code_ok) {
 			mocha_error_show(error);
 			mocha_error_init(error);
+			MOCHA_LOG("");
 		}
 	}
 }
@@ -95,7 +166,7 @@ static const mocha_object* eval_file(mocha_runtime* runtime, mocha_parser* parse
 	char* temp_buffer = malloc(max_buffer_count * sizeof(char));
 	mocha_char* temp_input = malloc(max_buffer_count * sizeof(mocha_char));
 	int character_count = fread(temp_buffer, 1, max_buffer_count, fp);
-	for (int i=0; i<character_count; ++i) {
+	for (int i = 0; i < character_count; ++i) {
 		temp_input[i] = temp_buffer[i];
 	}
 	temp_input[character_count] = 0;
@@ -104,12 +175,12 @@ static const mocha_object* eval_file(mocha_runtime* runtime, mocha_parser* parse
 	free(temp_input);
 	free(temp_buffer);
 
-
 	return o;
 }
 
 int main(int argc, char* argv[])
 {
+	init_ncurses();
 	mocha_values values;
 	mocha_values_init(&values);
 
@@ -131,4 +202,5 @@ int main(int argc, char* argv[])
 	if (runtime.error.code != mocha_error_code_ok) {
 		mocha_error_show(&runtime.error);
 	}
+	close_ncurses();
 }

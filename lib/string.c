@@ -11,7 +11,7 @@ mocha_boolean mocha_string_equal_str(const mocha_string* self, const char* cstr)
 	if (self->count != c_len) {
 		return mocha_false;
 	}
-	for (size_t i=0; i<c_len; ++i) {
+	for (size_t i = 0; i < c_len; ++i) {
 		if (s[i] != p[i]) {
 			return mocha_false;
 		}
@@ -26,7 +26,7 @@ mocha_boolean mocha_string_equal(const mocha_string* a, const mocha_string* b)
 		return mocha_false;
 	}
 
-	for (size_t i=0; i<a->count; ++i) {
+	for (size_t i = 0; i < a->count; ++i) {
 		if (a->string[i] != b->string[i]) {
 			return mocha_false;
 		}
@@ -41,7 +41,7 @@ mocha_boolean mocha_string_less(const mocha_string* a, const mocha_string* b)
 		return mocha_false;
 	}
 
-	for (size_t i=0; i<a->count; ++i) {
+	for (size_t i = 0; i < a->count; ++i) {
 		if (a->string[i] > b->string[i]) {
 			return mocha_false;
 		}
@@ -54,13 +54,12 @@ const char* mocha_string_to_c(const mocha_string* s)
 {
 	static char temp[512];
 	size_t len = s->count;
-	for (size_t i=0; i<len; ++i) {
+	for (size_t i = 0; i < len; ++i) {
 		temp[i] = s->string[i];
 	}
 	temp[len] = 0;
 	return temp;
 }
-
 
 void mocha_string_init(mocha_string* self, const mocha_char* s, size_t count)
 {
@@ -75,7 +74,7 @@ void mocha_string_init_from_c(mocha_string* self, const char* s)
 	size_t count = strlen(s);
 	size_t octet_count = sizeof(mocha_char) * (count + 1);
 	self->string = malloc(octet_count);
-	for (size_t i=0; i<count + 1; ++i) {
+	for (size_t i = 0; i < count + 1; ++i) {
 		self->string[i] = s[i];
 	}
 	self->count = count;

@@ -19,7 +19,8 @@ struct mocha_context* mocha_context_create(const mocha_context* self);
 const struct mocha_object* mocha_context_lookup(const mocha_context* self, const struct mocha_object* o);
 void mocha_context_add_or_replace(struct mocha_context* self, const struct mocha_object* key, const struct mocha_object* value);
 void mocha_context_add(struct mocha_context* self, const struct mocha_object* key, const struct mocha_object* value);
-void mocha_context_add_function(struct mocha_context* self, struct mocha_values* values, const char* name, const struct mocha_type* type);
+void mocha_context_add_function(struct mocha_context* self, struct mocha_values* values, const char* name,
+								const struct mocha_type* type);
 void mocha_context_init(mocha_context* self, const mocha_context* parent);
 
 #endif

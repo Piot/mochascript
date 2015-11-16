@@ -1,6 +1,6 @@
 (def a "global")
 
-(def f 
+(def f
   (let [a "local"]
     (fn [] a)))
 

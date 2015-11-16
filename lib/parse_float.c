@@ -8,10 +8,10 @@ float mocha_atof(const char* s, mocha_boolean* worked)
 	if (len == 0) {
 		return 0;
 	}
-	int dot_pos = mocha_strchr(s, '.') - s;
+	int dot_pos = (int) (mocha_strchr(s, '.') - s);
 	size_t inverse_dot_pos = (len - 1) - dot_pos;
 	float result = 0;
-	int number_position = -inverse_dot_pos;
+	int number_position = -(int) inverse_dot_pos;
 	mocha_boolean negative = mocha_false;
 	unsigned long factor;
 
@@ -20,11 +20,11 @@ float mocha_atof(const char* s, mocha_boolean* worked)
 		minimum_position = -6;
 	}
 	factor = 1000000;
-	for (int i=0; i < -minimum_position; ++i) {
+	for (int i = 0; i < -minimum_position; ++i) {
 		factor /= 10;
 	}
 
-	for (int i=len-1; i>=0; --i) {
+	for (int i = (int) len - 1; i >= 0; --i) {
 		const char ch = s[i];
 		if (ch == '-') {
 			negative = mocha_true;
@@ -48,7 +48,7 @@ float mocha_atof(const char* s, mocha_boolean* worked)
 	*worked = mocha_true;
 
 	if (negative) {
-		result = - result;
+		result = -result;
 	}
 
 	return result;

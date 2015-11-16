@@ -1,8 +1,13 @@
 #ifndef mocha_error_h
 #define mocha_error_h
 
-#define MOCHA_ERR(err_number) error->code = err_number; return 0;
-#define MOCHA_ERR_STRING(err_number, err_string) error->code = err_number; error->string = err_string; return 0;
+#define MOCHA_ERR(err_number)                                                                                                    \
+	error->code = err_number;                                                                                                    \
+	return 0;
+#define MOCHA_ERR_STRING(err_number, err_string)                                                                                 \
+	error->code = err_number;                                                                                                    \
+	error->string = err_string;                                                                                                  \
+	return 0;
 
 typedef enum mocha_error_code {
 	mocha_error_code_ok = 0,

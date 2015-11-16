@@ -37,4 +37,9 @@ mocha_boolean mocha_object_equal(const mocha_object* a, const mocha_object* b);
 mocha_boolean mocha_object_less(const mocha_object* a, const mocha_object* b);
 mocha_boolean mocha_object_truthy(const mocha_object* a);
 
+const mocha_map* mocha_object_map(const mocha_object* a);
+const mocha_list* mocha_object_list(const mocha_object* a);
+const mocha_vector* mocha_object_vector(const mocha_object* a);
+float mocha_object_float(const mocha_object* a);
+
 #endif

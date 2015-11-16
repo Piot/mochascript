@@ -4,6 +4,7 @@
 #include <mocha/log.h>
 #include <mocha/runtime.h>
 #include <mocha/print.h>
+#include <mocha/utils.h>
 
 #include <stdlib.h>
 
@@ -42,7 +43,7 @@ const mocha_object* mocha_values_create_symbol(mocha_values* self, const mocha_s
 	return value;
 }
 
-const mocha_object* mocha_values_create_map(mocha_values* self, const mocha_object** args, int count)
+const mocha_object* mocha_values_create_map(mocha_values* self, const mocha_object** args, size_t count)
 {
 	mocha_object* value = mocha_values_create_object(self, mocha_object_type_map);
 	mocha_map_init(&value->data.map, args, count);
@@ -51,7 +52,7 @@ const mocha_object* mocha_values_create_map(mocha_values* self, const mocha_obje
 	return value;
 }
 
-const mocha_object* mocha_values_create_vector(mocha_values* self, const mocha_object** args, int count)
+const mocha_object* mocha_values_create_vector(mocha_values* self, const mocha_object** args, size_t count)
 {
 	mocha_object* value = mocha_values_create_object(self, mocha_object_type_vector);
 	mocha_vector_init(&value->data.vector, args, count);
@@ -59,7 +60,7 @@ const mocha_object* mocha_values_create_vector(mocha_values* self, const mocha_o
 	return value;
 }
 
-const mocha_object* mocha_values_create_list(mocha_values* self, const mocha_object** args, int count)
+const mocha_object* mocha_values_create_list(mocha_values* self, const mocha_object** args, size_t count)
 {
 	mocha_object* value = mocha_values_create_object(self, mocha_object_type_list);
 	mocha_list_init(&value->data.list, args, count);
@@ -93,7 +94,7 @@ const mocha_object* mocha_values_create_string_from_cstr(mocha_values* self, con
 	return value;
 }
 
-const struct mocha_object* mocha_values_create_string(mocha_values* self, const mocha_char* s, int count)
+const struct mocha_object* mocha_values_create_string(mocha_values* self, const mocha_char* s, size_t count)
 {
 	mocha_object* value = mocha_values_create_object(self, mocha_object_type_string);
 	mocha_string_init(&value->data.string, s, count);
@@ -101,7 +102,9 @@ const struct mocha_object* mocha_values_create_string(mocha_values* self, const 
 	return value;
 }
 
-const mocha_object* mocha_values_create_function(mocha_values* self, const struct mocha_context* context, const mocha_object* name, const mocha_object* arguments, const mocha_object* body)
+const mocha_object* mocha_values_create_function(mocha_values* self, const struct mocha_context* context,
+												 const mocha_object* name, const mocha_object* arguments,
+												 const mocha_object* body)
 {
 	static mocha_type fn_type;
 	fn_type.eval_all_arguments = mocha_true;
@@ -113,12 +116,13 @@ const mocha_object* mocha_values_create_function(mocha_values* self, const struc
 	r->data.function.code = body;
 	mocha_context* context_with_own_name = mocha_context_create(context);
 	mocha_context_add(context_with_own_name, name, r);
-	//mocha_context_print_debug("function context", context_with_own_name);
+	// mocha_context_print_debug("function context", context_with_own_name);
 	r->data.function.context = context_with_own_name;
 	return r;
 }
 
-const mocha_object* mocha_values_create_macro(mocha_values* self, const struct mocha_context* context, const mocha_object* name, const mocha_object* arguments, const mocha_object* body)
+const mocha_object* mocha_values_create_macro(mocha_values* self, const struct mocha_context* context, const mocha_object* name,
+											  const mocha_object* arguments, const mocha_object* body)
 {
 	static mocha_type macro_type;
 	macro_type.eval_all_arguments = mocha_false;
@@ -130,7 +134,7 @@ const mocha_object* mocha_values_create_macro(mocha_values* self, const struct m
 	r->data.function.code = body;
 	mocha_context* context_with_own_name = mocha_context_create(context);
 	mocha_context_add(context_with_own_name, name, r);
-	//mocha_context_print_debug("function context", context_with_own_name);
+	// mocha_context_print_debug("function context", context_with_own_name);
 	r->data.function.context = context_with_own_name;
 	return r;
 }
@@ -191,14 +195,44 @@ void mocha_values_init(mocha_values* self)
 
 	self->map_def.invoke = map_func;
 	self->map_def.eval_all_arguments = mocha_true;
+
+	self->keyword_contents = malloc(sizeof(mocha_string) * 1024);
+	self->keyword_contents_index = 0;
 }
 
-const struct mocha_object* mocha_values_create_keyword(mocha_values* self, const mocha_char* s, int count)
+const struct mocha_object* mocha_values_create_keyword(mocha_values* self, const mocha_char* s, size_t count)
 {
-	mocha_object* value = mocha_values_create_object(self, mocha_object_type_keyword);
-	mocha_string* string = malloc(sizeof(mocha_string));
-	mocha_string_init(string, s, count);
-	mocha_keyword_init(&value->data.keyword, string);
-	value->object_type = &self->keyword_def;
-	return value;
+	mocha_string key_string;
+	mocha_string_init(&key_string, s, count);
+	const mocha_object* found_value = 0;
+
+	for (size_t i = 0; i < self->keyword_contents_index; i += 2) {
+		const mocha_object* key = self->keyword_contents[i];
+		if (mocha_string_equal(&key_string, &key->data.string)) {
+			found_value = self->keyword_contents[i + 1];
+			break;
+		}
+	}
+
+	if (found_value == 0) {
+		mocha_string* string = malloc(sizeof(mocha_string));
+		mocha_string_init(string, s, count);
+
+		const mocha_object* key = mocha_values_create_string(self, s, count);
+		self->keyword_contents[self->keyword_contents_index++] = key;
+
+		mocha_object* value = mocha_values_create_object(self, mocha_object_type_keyword);
+		self->keyword_contents[self->keyword_contents_index++] = value;
+		mocha_keyword_init(&value->data.keyword, string);
+		value->object_type = &self->keyword_def;
+
+		/*
+		MOCHA_OUTPUT("HAven't seen this yet:");
+		mocha_print_object_debug(value);
+		MOCHA_LOG("");
+		*/
+		found_value = value;
+	}
+
+	return found_value;
 }

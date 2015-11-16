@@ -16,7 +16,8 @@ typedef struct mocha_parser {
 	mocha_values* values;
 } mocha_parser;
 
-void mocha_parser_init(mocha_parser* self, mocha_values* values, mocha_context* context, const mocha_char* input, size_t input_length);
+void mocha_parser_init(mocha_parser* self, mocha_values* values, mocha_context* context, const mocha_char* input,
+					   size_t input_length);
 const struct mocha_object* mocha_parser_parse(mocha_parser* self, mocha_error* error);
 
 #endif

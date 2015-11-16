@@ -3,11 +3,7 @@
 
 #include <mocha/types.h>
 
-typedef enum mocha_number_type {
-	mocha_number_type_integer,
-	mocha_number_type_float
-} mocha_number_type;
-
+typedef enum mocha_number_type { mocha_number_type_integer, mocha_number_type_float } mocha_number_type;
 
 typedef struct mocha_number {
 	mocha_number_type type;

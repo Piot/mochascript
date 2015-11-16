@@ -9,13 +9,14 @@
 static void mocha_context_print_debug_internal(const char* debug_text, const mocha_context* self, int tab)
 {
 	if (self->parent) {
-		return mocha_context_print_debug_internal(debug_text, self->parent, tab + 1);
+		mocha_context_print_debug_internal(debug_text, self->parent, tab + 1);
+		return;
 	}
 
 	MOCHA_LOG("level:%d, context count:%lu", tab, self->count);
-	for (size_t i=0; i<self->count; i += 2) {
+	for (size_t i = 0; i < self->count; i += 2) {
 		const mocha_object* key = self->objects[i];
-		const mocha_object* value = self->objects[i+1];
+		const mocha_object* value = self->objects[i + 1];
 		mocha_print_object_debug(key);
 		MOCHA_OUTPUT(" : ");
 		mocha_print_object_debug(value);
@@ -37,9 +38,6 @@ mocha_context* mocha_context_create(const mocha_context* self)
 
 	return context;
 }
-
-
-
 
 void mocha_context_add(mocha_context* self, const mocha_object* key, const mocha_object* value)
 {
@@ -72,7 +70,7 @@ const mocha_object** internal_context_lookup(const mocha_context* self, const mo
 		MOCHA_LOG("Can not lookup with null key!");
 		return 0;
 	}
-	for (size_t i=0; i<self->count; i+=2) {
+	for (size_t i = 0; i < self->count; i += 2) {
 		const mocha_object* key = self->objects[i];
 		if (!key) {
 			MOCHA_LOG("key is null!");
@@ -81,11 +79,11 @@ const mocha_object** internal_context_lookup(const mocha_context* self, const mo
 		}
 		if (key->type == mocha_object_type_symbol && o->type == mocha_object_type_symbol) {
 			if (mocha_string_equal(o->data.symbol.string, key->data.symbol.string)) {
-				return &self->objects[i+1];
+				return &self->objects[i + 1];
 			}
 		} else if (key->type == mocha_object_type_keyword && o->type == mocha_object_type_keyword) {
 			if (mocha_string_equal(o->data.keyword.string, key->data.keyword.string)) {
-				return &self->objects[i+1];
+				return &self->objects[i + 1];
 			}
 		}
 	}

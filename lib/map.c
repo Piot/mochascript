@@ -4,7 +4,7 @@
 #include <mocha/print.h>
 #include <stdlib.h>
 
-void mocha_map_init(mocha_map* self, const mocha_object* args[], int count)
+void mocha_map_init(mocha_map* self, const mocha_object* args[], size_t count)
 {
 	if ((count % 2) != 0) {
 		MOCHA_LOG("ERROR: Must have even numbers in map!");
@@ -20,7 +20,7 @@ void mocha_map_init(mocha_map* self, const mocha_object* args[], int count)
 
 const struct mocha_object* mocha_map_lookup(const mocha_map* self, const struct mocha_object* key)
 {
-	for (size_t i=0; i<self->count; i += 2) {
+	for (size_t i = 0; i < self->count; i += 2) {
 		if (mocha_object_equal(self->objects[i], key)) {
 			return self->objects[i + 1];
 		}
@@ -34,7 +34,7 @@ mocha_boolean mocha_map_equal(const mocha_map* self, const mocha_map* other)
 		return mocha_false;
 	}
 
-	for (size_t i=0; i<other->count; i += 2) {
+	for (size_t i = 0; i < other->count; i += 2) {
 		const mocha_object* key = self->objects[i];
 		const mocha_object* other_value = mocha_map_lookup(other, key);
 		if (!other_value) {

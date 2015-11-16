@@ -14,5 +14,4 @@ mocha_char mocha_char_buffer_read_char(mocha_char_buffer* self);
 void mocha_char_buffer_unread_char(mocha_char_buffer* self, mocha_char c);
 mocha_char mocha_char_buffer_skip_space(mocha_char_buffer* self);
 
-
 #endif

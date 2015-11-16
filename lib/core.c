@@ -6,29 +6,35 @@
 #include <mocha/print.h>
 #include <stdlib.h>
 
+MOCHA_FUNCTION(dbg_ptr_func)
+{
+	const mocha_object* o = arguments->objects[1];
+	const mocha_object* result = mocha_values_create_integer(runtime->values, (int) o);
+	return result;
+}
+
 MOCHA_FUNCTION(map_fn)
 {
 	const mocha_object* sequence = arguments->objects[2];
 	const mocha_object* result = 0;
 
 	switch (sequence->type) {
-		case mocha_object_type_list:
-			result = 0;
-			break;
-		case mocha_object_type_vector:
-			break;
-		case mocha_object_type_nil:
-			result = 0;
-			break;
-		case mocha_object_type_map:
-			break;
-		default:
-			break;
+	case mocha_object_type_list:
+		result = 0;
+		break;
+	case mocha_object_type_vector:
+		break;
+	case mocha_object_type_nil:
+		result = 0;
+		break;
+	case mocha_object_type_map:
+		break;
+	default:
+		break;
 	}
 
 	return result;
 }
-
 
 MOCHA_FUNCTION(vec_func)
 {
@@ -36,33 +42,32 @@ MOCHA_FUNCTION(vec_func)
 
 	const mocha_object* r;
 	switch (sequence->type) {
-		case mocha_object_type_vector:
-			r = sequence;
-			break;
-		case mocha_object_type_list:
-			r = mocha_values_create_vector(runtime->values, sequence->data.list.objects, sequence->data.list.count);
-			break;
-		case mocha_object_type_map: {
-			const mocha_map* map = &sequence->data.map;
-			const mocha_object* objects[64];
-			for (size_t i=0; i<map->count; i+= 2) {
-				objects[i/2] = mocha_values_create_vector(runtime->values, &map->objects[i], 2);
-			}
-			r = mocha_values_create_vector(runtime->values, objects, map->count/2);
-		}
+	case mocha_object_type_vector:
+		r = sequence;
 		break;
-		case mocha_object_type_nil:
-			r = mocha_values_create_vector(runtime->values, 0, 0);
-			break;
-		default:
-			r = 0;
+	case mocha_object_type_list:
+		r = mocha_values_create_vector(runtime->values, sequence->data.list.objects, sequence->data.list.count);
+		break;
+	case mocha_object_type_map: {
+		const mocha_map* map = &sequence->data.map;
+		const mocha_object* objects[64];
+		for (size_t i = 0; i < map->count; i += 2) {
+			objects[i / 2] = mocha_values_create_vector(runtime->values, &map->objects[i], 2);
+		}
+		r = mocha_values_create_vector(runtime->values, objects, map->count / 2);
+	} break;
+	case mocha_object_type_nil:
+		r = mocha_values_create_vector(runtime->values, 0, 0);
+		break;
+	default:
+		r = 0;
 	}
 
 	return r;
 }
 
-
-static const mocha_object* fn(mocha_runtime* self, const mocha_context* context, const mocha_object* name, const mocha_object* arguments, const mocha_object* body)
+static const mocha_object* fn(mocha_runtime* self, const mocha_context* context, const mocha_object* name,
+							  const mocha_object* arguments, const mocha_object* body)
 {
 	const mocha_object* r = mocha_values_create_function(self->values, self->context, name, arguments, body);
 
@@ -85,7 +90,6 @@ static const mocha_object* def(mocha_runtime* runtime, mocha_context* context, c
 	return eval;
 }
 
-
 MOCHA_FUNCTION(def_func)
 {
 	const mocha_object* eval = def(runtime, context, arguments->objects[1], arguments->objects[2]);
@@ -102,14 +106,11 @@ MOCHA_FUNCTION(defmacro_func)
 
 	const mocha_object* macro = mocha_values_create_macro(runtime->values, runtime->context, name, macro_arguments, new_body);
 
-	const mocha_object* result = def(runtime, context, name, macro);
-
-
+	/* const mocha_object* result = */ def(runtime, context, name, macro);
 	// mocha_print_object_debug(result);
 
 	return macro;
 }
-
 
 MOCHA_FUNCTION(defn_func)
 {
@@ -164,12 +165,12 @@ MOCHA_FUNCTION(let_func)
 	}
 
 	mocha_context* new_context = mocha_context_create(context);
-	for (size_t i=0; i<assignment_vector->count; i+=2) {
+	for (size_t i = 0; i < assignment_vector->count; i += 2) {
 		const mocha_object* symbol = assignment_vector->objects[i];
 		if (symbol->type != mocha_object_type_symbol) {
 			MOCHA_LOG("must have symbol in let");
 		}
-		const mocha_object* value = assignment_vector->objects[i+1];
+		const mocha_object* value = assignment_vector->objects[i + 1];
 		const mocha_object* evaluated_value = mocha_runtime_eval(runtime, value, &runtime->error);
 
 		mocha_context_add(new_context, symbol, evaluated_value);
@@ -249,7 +250,7 @@ static void number_div(mocha_number* r, const mocha_number* a, const mocha_numbe
 		if (a->type == mocha_number_type_integer) {
 			r->data.f = (float) a->data.i / b->data.f;
 		} else {
-			r->data.f =  a->data.f / (float) b->data.i;
+			r->data.f = a->data.f / (float) b->data.i;
 		}
 	}
 }
@@ -290,14 +291,14 @@ MOCHA_FUNCTION(dec_func)
 	const mocha_object* argument = arguments->objects[1];
 	if (argument->type == mocha_object_type_number) {
 		switch (argument->data.number.type) {
-			case mocha_number_type_integer:
-				v.type = mocha_number_type_integer;
-				v.data.i = argument->data.number.data.i - 1;
-				break;
-			case mocha_number_type_float:
-				v.type = mocha_number_type_float;
-				v.data.f = argument->data.number.data.f - 1.0f;
-				break;
+		case mocha_number_type_integer:
+			v.type = mocha_number_type_integer;
+			v.data.i = argument->data.number.data.i - 1;
+			break;
+		case mocha_number_type_float:
+			v.type = mocha_number_type_float;
+			v.data.f = argument->data.number.data.f - 1.0f;
+			break;
 		}
 	}
 
@@ -318,14 +319,14 @@ MOCHA_FUNCTION(inc_func)
 	const mocha_object* argument = arguments->objects[1];
 	if (argument->type == mocha_object_type_number) {
 		switch (argument->data.number.type) {
-			case mocha_number_type_integer:
-				v.type = mocha_number_type_integer;
-				v.data.i = argument->data.number.data.i + 1;
-				break;
-			case mocha_number_type_float:
-				v.type = mocha_number_type_float;
-				v.data.f = argument->data.number.data.f + 1.0f;
-				break;
+		case mocha_number_type_integer:
+			v.type = mocha_number_type_integer;
+			v.data.i = argument->data.number.data.i + 1;
+			break;
+		case mocha_number_type_float:
+			v.type = mocha_number_type_float;
+			v.data.f = argument->data.number.data.f + 1.0f;
+			break;
 		}
 	}
 
@@ -380,7 +381,7 @@ MOCHA_FUNCTION(equal_func)
 	mocha_boolean result = mocha_true;
 
 	const mocha_object* source = arguments->objects[1];
-	for (size_t i=1; i<arguments->count; ++i) {
+	for (size_t i = 1; i < arguments->count; ++i) {
 		const mocha_object* v = arguments->objects[i];
 		if (!mocha_object_equal(source, v)) {
 			result = mocha_false;
@@ -397,7 +398,7 @@ MOCHA_FUNCTION(less_or_equal_func)
 	mocha_boolean result = mocha_true;
 
 	const mocha_object* source = arguments->objects[1];
-	for (size_t i=1; i<arguments->count; ++i) {
+	for (size_t i = 1; i < arguments->count; ++i) {
 		const mocha_object* v = arguments->objects[i];
 		if (!(mocha_object_equal(source, v) || mocha_object_less(source, v))) {
 			result = mocha_false;
@@ -415,19 +416,19 @@ MOCHA_FUNCTION(case_func)
 	for (size_t i = 2; i < arguments->count; i += 2) {
 		const mocha_object* when_value = arguments->objects[i];
 		if (mocha_object_equal(compare_value, when_value)) {
-			const mocha_object* when_argument = mocha_runtime_eval(runtime, arguments->objects[i+1], &runtime->error);
+			const mocha_object* when_argument = mocha_runtime_eval(runtime, arguments->objects[i + 1], &runtime->error);
 			return when_argument;
 		}
 	}
 
 	if ((arguments->count % 2) != 0) {
-		const mocha_object* default_value = mocha_runtime_eval(runtime, arguments->objects[arguments->count-1], &runtime->error);
+		const mocha_object* default_value =
+			mocha_runtime_eval(runtime, arguments->objects[arguments->count - 1], &runtime->error);
 		return default_value;
 	}
 
 	return mocha_values_create_nil(runtime->values);
 }
-
 
 MOCHA_FUNCTION(or_func)
 {
@@ -436,7 +437,7 @@ MOCHA_FUNCTION(or_func)
 	}
 
 	size_t last_index = arguments->count - 1;
-	for (size_t i=1; i < arguments->count; ++i) {
+	for (size_t i = 1; i < arguments->count; ++i) {
 		const mocha_object* a = arguments->objects[i];
 		if (mocha_object_truthy(a)) {
 			last_index = i;
@@ -454,7 +455,7 @@ MOCHA_FUNCTION(and_func)
 	}
 
 	size_t last_index = arguments->count - 1;
-	for (size_t i=1; i < arguments->count; ++i) {
+	for (size_t i = 1; i < arguments->count; ++i) {
 		const mocha_object* a = arguments->objects[i];
 		if (!mocha_object_truthy(a)) {
 			last_index = i;
@@ -484,7 +485,7 @@ MOCHA_FUNCTION(assoc_func)
 
 	size_t total_count = map->count + 2;
 	size_t overwrite_index = map->count;
-	for (size_t i = 0; i<map->count; i+= 2) {
+	for (size_t i = 0; i < map->count; i += 2) {
 		if (key && mocha_object_equal(map->objects[i], key)) {
 			total_count = map->count;
 			overwrite_index = i;
@@ -511,8 +512,8 @@ MOCHA_FUNCTION(dissoc_func)
 	const mocha_object* result[128];
 
 	size_t total_count = map->count;
-	size_t overwrite_index = (map->count - 1 ) * 2;
-	for (size_t i = 0; i < map->count; i+= 2) {
+	size_t overwrite_index = (map->count - 1) * 2;
+	for (size_t i = 0; i < map->count; i += 2) {
 		if (mocha_object_equal(map->objects[i], key)) {
 			overwrite_index = i;
 			total_count = map->count - 2;
@@ -521,7 +522,8 @@ MOCHA_FUNCTION(dissoc_func)
 	}
 
 	memcpy(result, map->objects, sizeof(mocha_object*) * overwrite_index);
-	memcpy(&result[overwrite_index], &map->objects[overwrite_index + 2], sizeof(mocha_object*) * ((map->count - 1) * 2 - overwrite_index));
+	memcpy(&result[overwrite_index], &map->objects[overwrite_index + 2],
+		   sizeof(mocha_object*) * ((map->count - 1) * 2 - overwrite_index));
 
 	const mocha_object* new_map = mocha_values_create_map(runtime->values, result, total_count);
 
@@ -573,21 +575,21 @@ MOCHA_FUNCTION(conj_func)
 	const mocha_object* sequence = arguments->objects[1];
 	const mocha_object* result;
 	switch (sequence->type) {
-		case mocha_object_type_list:
-			result = conj_list(runtime->values, &sequence->data.list, &arguments->objects[2], arguments->count-2);
-			break;
-		case mocha_object_type_vector:
-			result = conj_vector(runtime->values, &sequence->data.vector, &arguments->objects[2], arguments->count-2);
-			break;
-		case mocha_object_type_nil:
-			result = conj_list(runtime->values, 0, &arguments->objects[2], arguments->count-2);
-			break;
-		case mocha_object_type_map:
-			result = conj_map(runtime->values, &sequence->data.map, &arguments->objects[2]->data.map);
-			break;
-		default:
-			result = 0;
-			break;
+	case mocha_object_type_list:
+		result = conj_list(runtime->values, &sequence->data.list, &arguments->objects[2], arguments->count - 2);
+		break;
+	case mocha_object_type_vector:
+		result = conj_vector(runtime->values, &sequence->data.vector, &arguments->objects[2], arguments->count - 2);
+		break;
+	case mocha_object_type_nil:
+		result = conj_list(runtime->values, 0, &arguments->objects[2], arguments->count - 2);
+		break;
+	case mocha_object_type_map:
+		result = conj_map(runtime->values, &sequence->data.map, &arguments->objects[2]->data.map);
+		break;
+	default:
+		result = 0;
+		break;
 	}
 
 	return result;
@@ -617,34 +619,31 @@ static const mocha_object* cons_list(mocha_values* values, const mocha_list* sel
 	return new_list;
 }
 
-
 MOCHA_FUNCTION(cons_func)
 {
 	const mocha_object* sequence = arguments->objects[2];
 	const mocha_object* result;
 	switch (sequence->type) {
-		case mocha_object_type_list:
-			result = cons_list(runtime->values, &sequence->data.list, &arguments->objects[1]);
-			break;
-		case mocha_object_type_vector:
-			result = cons_vector(runtime->values, &sequence->data.vector, &arguments->objects[1]);
-			break;
-		case mocha_object_type_nil: {
-			result = mocha_values_create_list(runtime->values, &arguments->objects[1], 1);
-		}
+	case mocha_object_type_list:
+		result = cons_list(runtime->values, &sequence->data.list, &arguments->objects[1]);
 		break;
-		case mocha_object_type_map:
-			MOCHA_LOG("BAD MAP");
-			result = 0;
-			break;
-		default:
-			result = 0;
-			break;
+	case mocha_object_type_vector:
+		result = cons_vector(runtime->values, &sequence->data.vector, &arguments->objects[1]);
+		break;
+	case mocha_object_type_nil: {
+		result = mocha_values_create_list(runtime->values, &arguments->objects[1], 1);
+	} break;
+	case mocha_object_type_map:
+		MOCHA_LOG("BAD MAP");
+		result = 0;
+		break;
+	default:
+		result = 0;
+		break;
 	}
 
 	return result;
 }
-
 
 static const mocha_object* rest_vector(mocha_values* values, const mocha_vector* self)
 {
@@ -681,21 +680,21 @@ MOCHA_FUNCTION(rest_func)
 	const mocha_object* sequence = arguments->objects[1];
 	const mocha_object* result;
 	switch (sequence->type) {
-		case mocha_object_type_list:
-			result = rest_list(runtime->values, &sequence->data.list);
-			break;
-		case mocha_object_type_vector:
-			result = rest_vector(runtime->values, &sequence->data.vector);
-			break;
-		case mocha_object_type_nil:
-			result = mocha_values_create_list(runtime->values, 0, 0);
-			break;
-		case mocha_object_type_map:
-			result = 0;
-			break;
-		default:
-			result = 0;
-			break;
+	case mocha_object_type_list:
+		result = rest_list(runtime->values, &sequence->data.list);
+		break;
+	case mocha_object_type_vector:
+		result = rest_vector(runtime->values, &sequence->data.vector);
+		break;
+	case mocha_object_type_nil:
+		result = mocha_values_create_list(runtime->values, 0, 0);
+		break;
+	case mocha_object_type_map:
+		result = 0;
+		break;
+	default:
+		result = 0;
+		break;
 	}
 
 	return result;
@@ -716,26 +715,25 @@ MOCHA_FUNCTION(first_func)
 	const mocha_object* sequence = arguments->objects[1];
 	const mocha_object* result;
 	switch (sequence->type) {
-		case mocha_object_type_list:
-			result = first_list(runtime->values, &sequence->data.list);
-			break;
-		case mocha_object_type_vector:
-			result = first_vector(runtime->values, &sequence->data.vector);
-			break;
-		case mocha_object_type_nil:
-			result = sequence;
-			break;
-		case mocha_object_type_map:
-			result = 0;
-			break;
-		default:
-			result = 0;
-			break;
+	case mocha_object_type_list:
+		result = first_list(runtime->values, &sequence->data.list);
+		break;
+	case mocha_object_type_vector:
+		result = first_vector(runtime->values, &sequence->data.vector);
+		break;
+	case mocha_object_type_nil:
+		result = sequence;
+		break;
+	case mocha_object_type_map:
+		result = 0;
+		break;
+	default:
+		result = 0;
+		break;
 	}
 
 	return result;
 }
-
 
 MOCHA_FUNCTION(quote_func)
 {
@@ -755,12 +753,12 @@ MOCHA_FUNCTION(zero_func)
 	const mocha_object* argument = arguments->objects[1];
 	if (argument->type == mocha_object_type_number) {
 		switch (argument->data.number.type) {
-			case mocha_number_type_integer:
-				b = argument->data.number.data.i == 0;
-				break;
-			case mocha_number_type_float:
-				b = argument->data.number.data.f == 0.0f;
-				break;
+		case mocha_number_type_integer:
+			b = argument->data.number.data.i == 0;
+			break;
+		case mocha_number_type_float:
+			b = argument->data.number.data.f == 0.0f;
+			break;
 		}
 	}
 
@@ -783,24 +781,24 @@ MOCHA_FUNCTION(count_func)
 {
 	const mocha_object* sequence = arguments->objects[1];
 
-	int count = 0;
+	size_t count = 0;
 	switch (sequence->type) {
-		case mocha_object_type_list:
-			count = sequence->data.list.count;
-			break;
-		case mocha_object_type_vector:
-			count = sequence->data.vector.count;
-			break;
-		case mocha_object_type_nil:
-			break;
-		case mocha_object_type_map:
-			count = sequence->data.map.count;
-			break;
-		default:
-			break;
+	case mocha_object_type_list:
+		count = sequence->data.list.count;
+		break;
+	case mocha_object_type_vector:
+		count = sequence->data.vector.count;
+		break;
+	case mocha_object_type_nil:
+		break;
+	case mocha_object_type_map:
+		count = sequence->data.map.count;
+		break;
+	default:
+		break;
 	}
 
-	const mocha_object* o = mocha_values_create_integer(runtime->values, count);
+	const mocha_object* o = mocha_values_create_integer(runtime->values, (int) count);
 
 	return o;
 }
@@ -823,24 +821,23 @@ MOCHA_FUNCTION(empty_func)
 	mocha_boolean is_empty = mocha_true;
 
 	switch (sequence->type) {
-		case mocha_object_type_list:
-			is_empty = sequence->data.list.count == 0;
-			break;
-		case mocha_object_type_vector:
-			is_empty = sequence->data.vector.count == 0;
-			break;
-		case mocha_object_type_nil:
-			break;
-		case mocha_object_type_map:
-			break;
-		default:
-			break;
+	case mocha_object_type_list:
+		is_empty = sequence->data.list.count == 0;
+		break;
+	case mocha_object_type_vector:
+		is_empty = sequence->data.vector.count == 0;
+		break;
+	case mocha_object_type_nil:
+		break;
+	case mocha_object_type_map:
+		break;
+	default:
+		break;
 	}
 
 	const mocha_object* empty = mocha_values_create_boolean(runtime->values, is_empty);
 
 	return empty;
-
 }
 
 MOCHA_FUNCTION(nil_func)
@@ -860,19 +857,18 @@ MOCHA_FUNCTION(println_func)
 	return mocha_values_create_nil(runtime->values);
 }
 
-#define MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments) \
-static mocha_type name##_def; \
-name##_def.invoke = name##_func; \
-name##_def.eval_all_arguments = eval_arguments; \
+#define MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments)                                                                          \
+	static mocha_type name##_def;                                                                                                \
+	name##_def.invoke = name##_func;                                                                                             \
+	name##_def.eval_all_arguments = eval_arguments;
 
+#define MOCHA_DEF_FUNCTION(name, eval_arguments)                                                                                 \
+	MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments)                                                                              \
+	mocha_context_add_function(context, values, #name, &name##_def);
 
-#define MOCHA_DEF_FUNCTION(name, eval_arguments) \
-MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments) \
-mocha_context_add_function(context, values, #name, &name##_def);
-
-#define MOCHA_DEF_FUNCTION_EX(name, exported_name, eval_arguments) \
-MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments) \
-mocha_context_add_function(context, values, exported_name, &name##_def);
+#define MOCHA_DEF_FUNCTION_EX(name, exported_name, eval_arguments)                                                               \
+	MOCHA_DEF_FUNCTION_HELPER(name, eval_arguments)                                                                              \
+	mocha_context_add_function(context, values, exported_name, &name##_def);
 
 void mocha_runtime_add_function(mocha_runtime* self, const char* name, mocha_type_invoke func)
 {
@@ -920,4 +916,7 @@ void mocha_core_define_context(mocha_context* context, mocha_values* values)
 	MOCHA_DEF_FUNCTION(vec, mocha_true);
 	MOCHA_DEF_FUNCTION(fail, mocha_true);
 	MOCHA_DEF_FUNCTION(println, mocha_true);
+
+	// DEBUG
+	MOCHA_DEF_FUNCTION(dbg_ptr, mocha_true);
 }

@@ -15,7 +15,8 @@ void mocha_runtime_init(mocha_runtime* self, mocha_values* values)
 	mocha_error_init(&self->error);
 }
 
-static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, const mocha_object* fn, const mocha_list* arguments_list)
+static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, const mocha_object* fn,
+								  const mocha_list* arguments_list)
 {
 	const mocha_object* o = 0;
 	if (fn->object_type->invoke != 0) {
@@ -34,7 +35,8 @@ static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, c
 			}
 			if (mocha_string_equal_str(arg->data.symbol.string, "&")) {
 				const mocha_object* arg = args->objects[arg_count + 1];
-				const mocha_object* list = mocha_values_create_list(self->values, &arguments_list->objects[1 + arg_count], arguments_list->count - arg_count - 1);
+				const mocha_object* list = mocha_values_create_list(self->values, &arguments_list->objects[1 + arg_count],
+																	arguments_list->count - arg_count - 1);
 				minimum_number_of_arguments = arg_count;
 				var_args = mocha_true;
 				mocha_context_add(new_context, arg, list);
@@ -44,13 +46,12 @@ static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, c
 		}
 		if (var_args) {
 			if (arguments_list->count - 1 < minimum_number_of_arguments) {
-				MOCHA_LOG("Illegal number of arguments: %d", (int)minimum_number_of_arguments);
+				MOCHA_LOG("Illegal number of arguments: %d", (int) minimum_number_of_arguments);
 				return fn;
 			}
-		}
-		else {
+		} else {
 			if (arguments_list->count - 1 != minimum_number_of_arguments) {
-				MOCHA_LOG("Illegal number of arguments: %d", (int)minimum_number_of_arguments);
+				MOCHA_LOG("Illegal number of arguments: %d", (int) minimum_number_of_arguments);
 				return fn;
 			}
 		}
@@ -65,7 +66,7 @@ static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, c
 void mocha_runtime_push_context(mocha_runtime* self, mocha_context* context)
 {
 	// mocha_context_print_debug("pushing context", context);
-	for (size_t i=0; i<context->count; ++i) {
+	for (size_t i = 0; i < context->count; ++i) {
 		if (!context->objects[i]) {
 			MOCHA_LOG("Pushed context is really bad (null object)");
 			return;
@@ -92,7 +93,8 @@ void mocha_runtime_pop_context(mocha_runtime* self)
 	self->context = self->contexts[self->stack_depth];
 }
 
-const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const struct mocha_object* o, mocha_error* error, mocha_boolean eval_symbols)
+const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const struct mocha_object* o, mocha_error* error,
+												 mocha_boolean eval_symbols)
 {
 	if (o->type == mocha_object_type_list) {
 		const mocha_list* l = &o->data.list;
