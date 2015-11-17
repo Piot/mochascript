@@ -1,0 +1,5 @@
+(println (= (dbg_ptr :jane) (dbg_ptr :smith)))
+(= (dbg_ptr :world) (dbg_ptr :world))
+---
+false
+true

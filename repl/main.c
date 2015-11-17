@@ -53,47 +53,59 @@ void close_ncurses()
 	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 }
 
-int read_line(mocha_char* s, int max_length)
-{
-	const int c_max_length = 1024;
-	if (max_length > c_max_length) {
-		max_length = c_max_length;
-	}
-	char c_input[c_max_length];
+mocha_string history[100];
+size_t history_index = 0;
+size_t history_count = 0;
 
-	int input_length = 0;
+int read_line(mocha_char* s, int input_length, int max_length)
+{
+	for (int i = 0; i < input_length; ++i) {
+		putc(s[i], stdout);
+	}
+
+	fputs("\e[K", stdout);
+
 	while (input_length < max_length) {
 		int c_char = fgetc(stdin);
 		if (c_char == EOF) {
 			return EOF;
-		}
-		if (c_char == 27) {
+		} else if (c_char == 27) {
 			int key_char = fgetc(stdin);
 			if (key_char == '[') {
 				key_char = fgetc(stdin);
 				if (key_char == 'A') {
-					c_char = 'U';
+					for (int i = 0; i < input_length; ++i) {
+						putc(8, stdout);
+					}
+					return -2;
+				}
+				if (key_char == 'B') {
+					for (int i = 0; i < input_length; ++i) {
+						putc(8, stdout);
+					}
+					return -3;
 				}
 			}
-		}
-		if (c_char == 127) {
+		} else if (c_char == 127) {
 			if (input_length) {
 				--input_length;
 				s[input_length] = 0;
 				putc(8, stdout);
 				putc(32, stdout);
-				c_char = 8;
+				putc(8, stdout);
+				c_char = 0;
 			} else {
 				c_char = 0;
 			}
-		} else {
-			s[input_length] = c_char;
-			++input_length;
-		}
-		if (c_char == 10) {
+		} else if (c_char == 8) {
+			if (input_length) {
+			}
+		} else if (c_char == 10) {
 			break;
-		}
-		if (c_char) {
+		} else if (c_char == 13) {
+			continue;
+		} else {
+			s[input_length++] = c_char;
 			putc(c_char, stdout);
 		}
 	}
@@ -133,25 +145,51 @@ static const mocha_object* parse_and_print(mocha_runtime* runtime, mocha_parser*
 static void repl(mocha_runtime* runtime, mocha_parser* parser, mocha_error* error)
 {
 	const int max_length = 1024;
+	int input_length = 0;
 	mocha_char input[max_length];
 
+	MOCHA_OUTPUT("repl=> ");
 	while (1) {
-		MOCHA_OUTPUT("repl=> ");
-		int input_length = read_line(input, max_length);
-		MOCHA_LOG("");
+		input_length = read_line(input, input_length, max_length);
+
 		if (input_length == EOF) {
 			MOCHA_LOG("EOF");
 			break;
 		}
 
-		mocha_parser_init(parser, runtime->values, runtime->context, input, input_length);
-
-		const mocha_object* o;
-		o = parse_and_print(runtime, parser, mocha_false, error);
-		if (error->code != mocha_error_code_ok) {
-			mocha_error_show(error);
-			mocha_error_init(error);
+		if (input_length > 0) {
 			MOCHA_LOG("");
+			mocha_string* h = &history[history_count++];
+			history_index = history_count;
+			mocha_string_init(h, input, input_length);
+
+			mocha_parser_init(parser, runtime->values, runtime->context, input, input_length);
+			input_length = 0;
+			const mocha_object* o;
+			o = parse_and_print(runtime, parser, mocha_false, error);
+			if (error->code != mocha_error_code_ok) {
+				mocha_error_show(error);
+				mocha_error_init(error);
+				MOCHA_LOG("");
+			}
+			MOCHA_OUTPUT("repl=> ");
+		} else {
+			int old_history_index = history_index;
+			if (input_length == -2) {
+				if (history_index != 0) {
+					history_index--;
+				}
+			} else if (input_length == -3) {
+				if (history_index < history_count) {
+					history_index++;
+				}
+			}
+
+			{
+				mocha_string* h = &history[history_index];
+				memcpy(input, h->string, sizeof(mocha_char) * h->count);
+				input_length = h->count;
+			}
 		}
 	}
 }
