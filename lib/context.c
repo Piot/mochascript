@@ -13,7 +13,7 @@ static void mocha_context_print_debug_internal(const char* debug_text, const moc
 		return;
 	}
 
-	MOCHA_LOG("level:%d, context count:%lu", tab, self->count);
+	MOCHA_LOG("level:%d, context count:%zu", tab, self->count);
 	for (size_t i = 0; i < self->count; i += 2) {
 		const mocha_object* key = self->objects[i];
 		const mocha_object* value = self->objects[i + 1];

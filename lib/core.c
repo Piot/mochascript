@@ -287,6 +287,7 @@ MOCHA_FUNCTION(int_func)
 MOCHA_FUNCTION(dec_func)
 {
 	mocha_number v;
+	mocha_number_init_int(&v, 0);
 
 	const mocha_object* argument = arguments->objects[1];
 	if (argument->type == mocha_object_type_number) {
@@ -315,6 +316,7 @@ MOCHA_FUNCTION(thread_first_func)
 MOCHA_FUNCTION(inc_func)
 {
 	mocha_number v;
+	mocha_number_init_int(&v, 0);
 
 	const mocha_object* argument = arguments->objects[1];
 	if (argument->type == mocha_object_type_number) {
