@@ -1,6 +1,7 @@
 #include <mocha/object.h>
 #include <mocha/log.h>
 #include <mocha/print.h>
+#include <mocha/type.h>
 
 mocha_boolean mocha_object_equal(const mocha_object* a, const mocha_object* b)
 {
@@ -123,4 +124,14 @@ float mocha_object_float(const mocha_object* a)
 		return mocha_number_float(&a->data.number);
 	}
 	return -9999999.9999f;
+}
+
+mocha_boolean mocha_object_is_function(const mocha_object* a)
+{
+	return (a->type == mocha_object_type_function) || (a->type == mocha_object_type_internal_function);
+}
+
+mocha_boolean mocha_object_is_invokable(const mocha_object* a)
+{
+	return (a->object_type && a->object_type->invoke != 0) || (a->type == mocha_object_type_function);
 }

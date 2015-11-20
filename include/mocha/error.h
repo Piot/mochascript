@@ -18,7 +18,8 @@ typedef enum mocha_error_code {
 	mocha_error_code_file_not_found,
 	mocha_error_code_fail,
 	mocha_error_code_illegal_float_number,
-	mocha_error_code_expected_list
+	mocha_error_code_expected_list,
+	mocha_error_code_not_invokable
 } mocha_error_code;
 
 typedef struct mocha_error {

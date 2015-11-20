@@ -58,6 +58,8 @@ static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, c
 		mocha_runtime_push_context(self, new_context);
 		o = mocha_runtime_eval(self, fn->data.function.code, &self->error);
 		mocha_runtime_pop_context(self);
+	} else {
+		MOCHA_LOG("Invoke failed");
 	}
 
 	return o;
@@ -102,9 +104,10 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 			return o;
 		}
 		const struct mocha_object* fn = mocha_runtime_eval(self, l->objects[0], error);
-		if (!fn) {
-			MOCHA_LOG("Couldn't find lookup:");
-			mocha_print_object_debug(l->objects[0]);
+		if (!fn || !mocha_object_is_invokable(fn)) {
+			MOCHA_ERR(mocha_error_code_not_invokable);
+			// MOCHA_LOG("Not invokable:");
+			// mocha_print_object_debug(l->objects[0]);
 			return 0;
 		}
 		mocha_boolean should_evaluate_arguments = mocha_true;
@@ -150,6 +153,7 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 			if (eval_symbols && o) {
 				o = mocha_runtime_eval(self, o, error);
 			}
+		} else {
 		}
 	}
 
