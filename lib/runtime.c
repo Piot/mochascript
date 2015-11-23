@@ -15,9 +15,8 @@ void mocha_runtime_init(mocha_runtime* self, mocha_values* values)
 	mocha_error_init(&self->error);
 }
 
-
 const mocha_object* mocha_runtime_invoke_function(mocha_runtime* self, mocha_context* context, const mocha_function* fn,
-								  const mocha_list* arguments_list)
+												  const mocha_list* arguments_list)
 {
 	const mocha_list* args = &fn->arguments->data.list;
 	mocha_context* new_context = mocha_context_create(fn->context);
@@ -42,7 +41,7 @@ const mocha_object* mocha_runtime_invoke_function(mocha_runtime* self, mocha_con
 		}
 	}
 	if (arguments_list->count - 1 < minimum_number_of_arguments) {
-		MOCHA_LOG("Illegal number of arguments: %d (expected %zu)", (int) minimum_number_of_arguments, arguments_list->count );
+		MOCHA_LOG("Illegal number of arguments: %d (expected %zu)", (int) minimum_number_of_arguments, arguments_list->count);
 		return 0;
 	}
 	mocha_runtime_push_context(self, new_context);
@@ -50,7 +49,6 @@ const mocha_object* mocha_runtime_invoke_function(mocha_runtime* self, mocha_con
 	mocha_runtime_pop_context(self);
 	return result;
 }
-
 
 static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, const mocha_object* fn,
 								  const mocha_list* arguments_list)

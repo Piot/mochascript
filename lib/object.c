@@ -135,7 +135,6 @@ const mocha_function* mocha_object_function(const mocha_object* a)
 	return 0;
 }
 
-
 mocha_boolean mocha_object_is_function(const mocha_object* a)
 {
 	return (a->type == mocha_object_type_function) || (a->type == mocha_object_type_internal_function);
