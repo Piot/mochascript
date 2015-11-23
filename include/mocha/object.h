@@ -41,6 +41,7 @@ const mocha_map* mocha_object_map(const mocha_object* a);
 const mocha_list* mocha_object_list(const mocha_object* a);
 const mocha_vector* mocha_object_vector(const mocha_object* a);
 float mocha_object_float(const mocha_object* a);
+const mocha_function* mocha_object_function(const mocha_object* a);
 
 mocha_boolean mocha_object_is_invokable(const mocha_object* a);
 mocha_boolean mocha_object_is_function(const mocha_object* a);

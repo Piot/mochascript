@@ -15,6 +15,43 @@ void mocha_runtime_init(mocha_runtime* self, mocha_values* values)
 	mocha_error_init(&self->error);
 }
 
+
+const mocha_object* mocha_runtime_invoke_function(mocha_runtime* self, mocha_context* context, const mocha_function* fn,
+								  const mocha_list* arguments_list)
+{
+	const mocha_list* args = &fn->arguments->data.list;
+	mocha_context* new_context = mocha_context_create(fn->context);
+	// mocha_context_print_debug("function context:", new_context);
+	size_t minimum_number_of_arguments = args->count;
+	mocha_boolean var_args = mocha_false;
+	for (size_t arg_count = 0; arg_count < args->count; ++arg_count) {
+		const mocha_object* arg = args->objects[arg_count];
+		if (arg->type != mocha_object_type_symbol) {
+			MOCHA_LOG("Must use symbols!");
+			return 0;
+		}
+		if (mocha_string_equal_str(arg->data.symbol.string, "&")) {
+			const mocha_object* arg = args->objects[arg_count + 1];
+			const mocha_object* list = mocha_values_create_list(self->values, &arguments_list->objects[1 + arg_count],
+																arguments_list->count - arg_count - 1);
+			minimum_number_of_arguments = arg_count;
+			var_args = mocha_true;
+			mocha_context_add(new_context, arg, list);
+		} else {
+			mocha_context_add(new_context, arg, arguments_list->objects[1 + arg_count]);
+		}
+	}
+	if (arguments_list->count - 1 < minimum_number_of_arguments) {
+		MOCHA_LOG("Illegal number of arguments: %d (expected %zu)", (int) minimum_number_of_arguments, arguments_list->count );
+		return 0;
+	}
+	mocha_runtime_push_context(self, new_context);
+	const mocha_object* result = mocha_runtime_eval(self, fn->code, &self->error);
+	mocha_runtime_pop_context(self);
+	return result;
+}
+
+
 static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, const mocha_object* fn,
 								  const mocha_list* arguments_list)
 {
@@ -22,42 +59,7 @@ static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, c
 	if (fn->object_type->invoke != 0) {
 		o = fn->object_type->invoke(self, context, arguments_list);
 	} else if (fn->type == mocha_object_type_function) {
-		const mocha_list* args = &fn->data.function.arguments->data.list;
-		mocha_context* new_context = mocha_context_create(fn->data.function.context);
-		// mocha_context_print_debug("function context:", new_context);
-		size_t minimum_number_of_arguments = args->count;
-		mocha_boolean var_args = mocha_false;
-		for (size_t arg_count = 0; arg_count < args->count; ++arg_count) {
-			const mocha_object* arg = args->objects[arg_count];
-			if (arg->type != mocha_object_type_symbol) {
-				MOCHA_LOG("Must use symbols!");
-				return 0;
-			}
-			if (mocha_string_equal_str(arg->data.symbol.string, "&")) {
-				const mocha_object* arg = args->objects[arg_count + 1];
-				const mocha_object* list = mocha_values_create_list(self->values, &arguments_list->objects[1 + arg_count],
-																	arguments_list->count - arg_count - 1);
-				minimum_number_of_arguments = arg_count;
-				var_args = mocha_true;
-				mocha_context_add(new_context, arg, list);
-			} else {
-				mocha_context_add(new_context, arg, arguments_list->objects[1 + arg_count]);
-			}
-		}
-		if (var_args) {
-			if (arguments_list->count - 1 < minimum_number_of_arguments) {
-				MOCHA_LOG("Illegal number of arguments: %d", (int) minimum_number_of_arguments);
-				return fn;
-			}
-		} else {
-			if (arguments_list->count - 1 != minimum_number_of_arguments) {
-				MOCHA_LOG("Illegal number of arguments: %d", (int) minimum_number_of_arguments);
-				return fn;
-			}
-		}
-		mocha_runtime_push_context(self, new_context);
-		o = mocha_runtime_eval(self, fn->data.function.code, &self->error);
-		mocha_runtime_pop_context(self);
+		o = mocha_runtime_invoke_function(self, context, &fn->data.function, arguments_list);
 	} else {
 		MOCHA_LOG("Invoke failed");
 	}
