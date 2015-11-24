@@ -1,0 +1,4 @@
+(defn update-position [pos] [(inc (get pos 0)) (or (get pos 1) 0)])
+(update-position [1 2])
+---
+[2 2]

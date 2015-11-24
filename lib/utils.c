@@ -18,3 +18,12 @@ const struct mocha_object* mocha_utils_map_lookup_string(const mocha_map* self, 
 
 	return mocha_map_lookup(self, string_keyword);
 }
+
+const struct mocha_object* mocha_utils_vector_index(const mocha_vector* self, size_t index, mocha_values* values)
+{
+	if (index < self->count) {
+		return self->objects[index];
+	} else {
+		return mocha_values_create_nil(values);
+	}
+}

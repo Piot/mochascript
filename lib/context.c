@@ -47,6 +47,7 @@ void mocha_context_add(mocha_context* self, const mocha_object* key, const mocha
 	}
 	if (!value) {
 		MOCHA_LOG("ADD: value is null");
+		mocha_print_object_debug(key);
 		return;
 	}
 

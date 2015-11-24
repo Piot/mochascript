@@ -148,6 +148,19 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 				converted_args[i] = arg;
 			}
 			o = mocha_values_create_map(self->values, converted_args, m->count);
+		} else if (o->type == mocha_object_type_vector) {
+			const mocha_vector* m = &o->data.vector;
+			const mocha_object* converted_args[32];
+			for (size_t i = 0; i < m->count; ++i) {
+				const struct mocha_object* arg = mocha_runtime_eval(self, m->objects[i], error);
+				if (!arg) {
+					MOCHA_LOG("Couldn't evaluate:");
+					mocha_print_object_debug(m->objects[i]);
+					return 0;
+				}
+				converted_args[i] = arg;
+			}
+			o = mocha_values_create_vector(self->values, converted_args, m->count);
 		} else if (o->type == mocha_object_type_symbol) {
 			o = mocha_context_lookup(self->context, o);
 			if (eval_symbols && o) {

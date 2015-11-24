@@ -54,3 +54,13 @@ float mocha_number_float(const mocha_number* self)
 			return self->data.f;
 	}
 }
+
+int mocha_number_int(const mocha_number* self)
+{
+	switch (self->type) {
+		case mocha_number_type_integer:
+			return self->data.i;
+		default:
+			return -1;
+	}
+}

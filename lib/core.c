@@ -4,6 +4,7 @@
 #include <mocha/values.h>
 #include <mocha/log.h>
 #include <mocha/print.h>
+#include <mocha/utils.h>
 #include <stdlib.h>
 
 MOCHA_FUNCTION(dbg_ptr_func)
@@ -143,16 +144,24 @@ MOCHA_FUNCTION(get_func)
 {
 	const mocha_object* object = arguments->objects[1];
 	const mocha_object* lookup = arguments->objects[2];
-	if (object->type == mocha_object_type_map) {
+	if (mocha_object_is_nil(object)) {
+		return object;
+	} else if (object->type == mocha_object_type_map) {
 		const struct mocha_object* result = mocha_map_lookup(&object->data.map, lookup);
 		return result;
+	} else if (object->type == mocha_object_type_vector) {
+		const struct mocha_object* result =
+			mocha_utils_vector_index(&object->data.vector, mocha_object_unsigned(lookup), runtime->values);
+		return result;
 	}
+
 	return 0;
 }
 
 MOCHA_FUNCTION(let_func)
 {
-	const mocha_object* assignments = mocha_runtime_eval(runtime, arguments->objects[1], &runtime->error);
+	const mocha_object* assignments =
+		arguments->objects[1]; // mocha_runtime_eval(runtime, arguments->objects[1], &runtime->error);
 	if (!assignments || assignments->type != mocha_object_type_vector) {
 		MOCHA_LOG("must have vector in let!");
 		return 0;

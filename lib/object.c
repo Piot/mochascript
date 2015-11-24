@@ -88,6 +88,11 @@ mocha_boolean mocha_object_truthy(const mocha_object* a)
 	}
 }
 
+mocha_boolean mocha_object_is_nil(const mocha_object* a)
+{
+	return a->type == mocha_object_type_nil;
+}
+
 const mocha_map* mocha_object_map(const mocha_object* a)
 {
 	if (a->type == mocha_object_type_map) {
@@ -124,6 +129,24 @@ float mocha_object_float(const mocha_object* a)
 		return mocha_number_float(&a->data.number);
 	}
 	return -9999999.9999f;
+}
+
+int mocha_object_integer(const mocha_object* a)
+{
+	if (a->type == mocha_object_type_number) {
+		return mocha_number_int(&a->data.number);
+	}
+	return -9999999;
+}
+
+size_t mocha_object_unsigned(const mocha_object* a)
+{
+	int v = mocha_object_integer(a);
+	if (v < 0) {
+		MOCHA_LOG("Unsigned problem");
+		v = 0;
+	}
+	return v;
 }
 
 const mocha_function* mocha_object_function(const mocha_object* a)
