@@ -167,3 +167,8 @@ mocha_boolean mocha_object_is_invokable(const mocha_object* a)
 {
 	return (a->object_type && a->object_type->invoke != 0) || (a->type == mocha_object_type_function);
 }
+
+mocha_boolean mocha_object_is_list(const mocha_object* a)
+{
+	return (a->type == mocha_object_type_list);
+}

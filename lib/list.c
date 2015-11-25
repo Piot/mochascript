@@ -3,11 +3,18 @@
 #include <mocha/log.h>
 #include <stdlib.h>
 
-void mocha_list_init(mocha_list* self, const mocha_object** args, size_t count)
+size_t mocha_list_init_prepare(mocha_list* self, size_t count)
 {
 	size_t octet_count = sizeof(mocha_object*) * count;
 	self->objects = malloc(octet_count);
 	self->count = count;
+
+	return octet_count;
+}
+
+void mocha_list_init(mocha_list* self, const mocha_object** args, size_t count)
+{
+	size_t octet_count = mocha_list_init_prepare(self, count);
 	memcpy(self->objects, args, octet_count);
 }
 

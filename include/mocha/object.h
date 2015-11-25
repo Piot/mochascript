@@ -48,5 +48,6 @@ const mocha_function* mocha_object_function(const mocha_object* a);
 
 mocha_boolean mocha_object_is_invokable(const mocha_object* a);
 mocha_boolean mocha_object_is_function(const mocha_object* a);
+mocha_boolean mocha_object_is_list(const mocha_object* a);
 
 #endif

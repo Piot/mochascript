@@ -30,6 +30,7 @@ const struct mocha_object* mocha_values_create_function(mocha_values* self, cons
 const struct mocha_object* mocha_values_create_symbol(mocha_values* self, const mocha_string* string);
 const struct mocha_object* mocha_values_create_map(mocha_values* self, const struct mocha_object** args, size_t count);
 const struct mocha_object* mocha_values_create_list(mocha_values* self, const struct mocha_object** args, size_t count);
+const struct mocha_object* mocha_values_create_list_cons(mocha_values* self, const mocha_list* list, const mocha_object* a);
 const struct mocha_object* mocha_values_create_vector(mocha_values* self, const struct mocha_object** args, size_t count);
 const struct mocha_object* mocha_values_create_string_from_cstr(mocha_values* self, const char* s);
 const struct mocha_object* mocha_values_create_string(mocha_values* self, const mocha_char* s, size_t count);

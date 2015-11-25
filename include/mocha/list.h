@@ -11,6 +11,7 @@ typedef struct mocha_list {
 } mocha_list;
 
 void mocha_list_init(mocha_list* self, const struct mocha_object* args[], size_t count);
+size_t mocha_list_init_prepare(mocha_list* self, size_t count);
 mocha_boolean mocha_list_equal(const mocha_list* self, const mocha_list* other);
 
 #endif
