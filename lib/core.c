@@ -385,6 +385,45 @@ MOCHA_FUNCTION(thread_first_func)
 	return result;
 }
 
+static const mocha_object* thread_last_list(mocha_values* values, const mocha_list* list, const mocha_object* a)
+{
+	mocha_list new_list;
+	mocha_list_init_prepare(&new_list, list->count + 1);
+	if (list->count > 1) {
+		memcpy(new_list.objects, list->objects, sizeof(mocha_object*) * list->count);
+	}
+	new_list.objects[new_list.count - 1] = a;
+	const mocha_object* value = mocha_values_create_list(values, new_list.objects, new_list.count);
+
+	return value;
+}
+
+MOCHA_FUNCTION(thread_last_func)
+{
+	if (arguments->count < 2) {
+		return mocha_values_create_nil(runtime->values);
+	}
+	const mocha_object* result = arguments->objects[1];
+	for (size_t i = 2; i < arguments->count; ++i) {
+		const mocha_object* o = arguments->objects[i];
+		mocha_list empty_list;
+		const mocha_list* list = &empty_list;
+
+		if (mocha_object_is_list(o)) {
+			list = mocha_object_list(o);
+		} else {
+			mocha_list_init(&empty_list, &o, 1);
+		}
+		const mocha_object* created_list = thread_last_list(runtime->values, list, result);
+
+		mocha_error error;
+		mocha_error_init(&error);
+		result = mocha_runtime_eval(runtime, created_list, &error);
+	}
+
+	return result;
+}
+
 MOCHA_FUNCTION(inc_func)
 {
 	mocha_number v;
@@ -972,6 +1011,7 @@ void mocha_core_define_context(mocha_context* context, mocha_values* values)
 	MOCHA_DEF_FUNCTION_EX(dec, "dec", mocha_true);
 	MOCHA_DEF_FUNCTION_EX(inc, "inc", mocha_true);
 	MOCHA_DEF_FUNCTION_EX(thread_first, "->", mocha_false);
+	MOCHA_DEF_FUNCTION_EX(thread_last, "->>", mocha_false);
 	MOCHA_DEF_FUNCTION_EX(div, "/", mocha_true);
 	MOCHA_DEF_FUNCTION(and, mocha_true);
 	MOCHA_DEF_FUNCTION(or, mocha_true);
