@@ -1,0 +1,4 @@
+(defn hello [a] (* a 2))
+(-> 4 inc hello inc)
+---
+11
