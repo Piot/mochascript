@@ -28,6 +28,8 @@ void mocha_runtime_push_context(mocha_runtime* self, mocha_context* context);
 const mocha_object* mocha_runtime_invoke_function(mocha_runtime* self, mocha_context* context, const mocha_function* fn,
 												  const mocha_list* arguments_list);
 
+const mocha_object* mocha_runtime_invoke(mocha_runtime* self, mocha_context* context, const mocha_object* fn,
+										 const mocha_list* arguments_list);
 const struct mocha_object* mocha_runtime_eval(mocha_runtime* self, const struct mocha_object* o, struct mocha_error* error);
 const struct mocha_object* mocha_runtime_eval_symbols(mocha_runtime* self, const struct mocha_object* o,
 													  struct mocha_error* error);

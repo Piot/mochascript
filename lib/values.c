@@ -173,7 +173,7 @@ MOCHA_FUNCTION(keyword_func)
 	return mocha_values_create_nil(runtime->values);
 }
 
-MOCHA_FUNCTION(map_func)
+MOCHA_FUNCTION(map_type_func)
 {
 	const mocha_object* argument = arguments->objects[1];
 	const mocha_object* map_self = arguments->objects[0];
@@ -193,7 +193,7 @@ void mocha_values_init(mocha_values* self)
 	self->keyword_def.invoke = keyword_func;
 	self->keyword_def.eval_all_arguments = mocha_true;
 
-	self->map_def.invoke = map_func;
+	self->map_def.invoke = map_type_func;
 	self->map_def.eval_all_arguments = mocha_true;
 
 	self->keyword_contents = malloc(sizeof(mocha_string) * 1024);

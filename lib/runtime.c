@@ -50,10 +50,17 @@ const mocha_object* mocha_runtime_invoke_function(mocha_runtime* self, mocha_con
 	return result;
 }
 
-static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, const mocha_object* fn,
-								  const mocha_list* arguments_list)
+const mocha_object* mocha_runtime_invoke(mocha_runtime* self, mocha_context* context, const mocha_object* fn,
+										 const mocha_list* arguments_list)
 {
 	const mocha_object* o = 0;
+	if (!fn) {
+		MOCHA_LOG("NO FN!");
+	}
+	if (!fn->object_type) {
+		MOCHA_LOG("NO OBJECT TYPE");
+		mocha_print_object_debug(fn);
+	}
 	if (fn->object_type->invoke != 0) {
 		o = fn->object_type->invoke(self, context, arguments_list);
 	} else if (fn->type == mocha_object_type_function) {
@@ -130,7 +137,7 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 			mocha_list_init(&new_args, converted_args, l->count);
 			l = &new_args;
 		}
-		o = invoke(self, self->context, fn, l);
+		o = mocha_runtime_invoke(self, self->context, fn, l);
 		if (!o) {
 			mocha_print_object_debug(fn);
 		}

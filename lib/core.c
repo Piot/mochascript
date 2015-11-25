@@ -14,17 +14,24 @@ MOCHA_FUNCTION(dbg_ptr_func)
 	return result;
 }
 
-MOCHA_FUNCTION(map_fn)
+MOCHA_FUNCTION(map_func)
 {
 	const mocha_object* sequence = arguments->objects[2];
-	const mocha_object* result = 0;
+	const mocha_object* invokable = arguments->objects[1];
+	const mocha_object* result = arguments->objects[3];
+
+	const mocha_object** input;
+	size_t input_count;
 
 	switch (sequence->type) {
 		case mocha_object_type_list:
 			result = 0;
 			break;
-		case mocha_object_type_vector:
-			break;
+		case mocha_object_type_vector: {
+			const mocha_vector* vector = mocha_object_vector(sequence);
+			input = vector->objects;
+			input_count = vector->count;
+		} break;
 		case mocha_object_type_nil:
 			result = 0;
 			break;
@@ -33,6 +40,22 @@ MOCHA_FUNCTION(map_fn)
 		default:
 			break;
 	}
+
+	// static const mocha_object* invoke(mocha_runtime* self, mocha_context* context, const mocha_object* fn,
+	// const mocha_list* arguments_list)
+	mocha_list temp_map_list;
+	const mocha_object* temp_map_arguments[2];
+	const mocha_object* temp_result_objects[1024];
+	temp_map_arguments[0] = arguments->objects[0];
+	for (size_t i = 0; i < input_count; ++i) {
+		temp_map_arguments[1] = input[i];
+		mocha_list_init(&temp_map_list, temp_map_arguments, 2);
+		// const mocha_object* map_arguments = mocha_values_create_list(runtime->values, temp_map_list, 2);
+		result = mocha_runtime_invoke(runtime, context, invokable, &temp_map_list);
+		temp_result_objects[i] = result;
+	}
+
+	result = mocha_values_create_list(runtime->values, temp_result_objects, input_count);
 
 	return result;
 }
@@ -925,6 +948,7 @@ void mocha_core_define_context(mocha_context* context, mocha_values* values)
 	MOCHA_DEF_FUNCTION(unquote, mocha_false);
 	MOCHA_DEF_FUNCTION(not, mocha_true);
 	MOCHA_DEF_FUNCTION(vec, mocha_true);
+	MOCHA_DEF_FUNCTION(map, mocha_true);
 	MOCHA_DEF_FUNCTION(fail, mocha_true);
 	MOCHA_DEF_FUNCTION(println, mocha_true);
 
