@@ -21,7 +21,7 @@ MOCHA_FUNCTION(map_func)
 	const mocha_object* result = arguments->objects[3];
 
 	const mocha_object** input;
-	size_t input_count;
+	size_t input_count = 0;
 
 	switch (sequence->type) {
 		case mocha_object_type_list:

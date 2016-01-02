@@ -41,6 +41,7 @@ mocha_boolean mocha_object_is_nil(const mocha_object* a);
 const mocha_map* mocha_object_map(const mocha_object* a);
 const mocha_list* mocha_object_list(const mocha_object* a);
 const mocha_vector* mocha_object_vector(const mocha_object* a);
+const mocha_keyword* mocha_object_keyword(const mocha_object* a);
 float mocha_object_float(const mocha_object* a);
 int mocha_object_integer(const mocha_object* a);
 size_t mocha_object_unsigned(const mocha_object* a);

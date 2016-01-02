@@ -123,6 +123,16 @@ const mocha_vector* mocha_object_vector(const mocha_object* a)
 	return 0;
 }
 
+const mocha_keyword* mocha_object_keyword(const mocha_object* a)
+{
+	if (a->type == mocha_object_type_keyword) {
+		return &a->data.keyword;
+	}
+
+	MOCHA_LOG("Error: wasn't a keyword");
+	return 0;
+}
+
 float mocha_object_float(const mocha_object* a)
 {
 	if (a->type == mocha_object_type_number) {
