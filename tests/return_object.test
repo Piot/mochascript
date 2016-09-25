@@ -1,0 +1,15 @@
+(defn update []
+  {
+    :sprites
+    [
+      {
+        :position [10 20]
+        :material :materials/pickup
+        :transparency 1.0}
+      {
+        :position [30 50]
+        :material :materials/pickup
+        :transparency 0.4}]})
+(update)
+---
+{:sprites [{:position [10 20] :material :materials/pickup :transparency 1.000000} {:position [30 50] :material :materials/pickup :transparency 0.400000}]}
