@@ -4,6 +4,14 @@
 #include <mocha/values.h>
 #include <stdlib.h>
 
+typedef struct cached_function {
+	struct mocha_list list;
+	const struct mocha_object* result;
+} cached_function;
+
+cached_function cached_functions[2000];
+int cached_functions_count = 0;
+
 void mocha_runtime_init(mocha_runtime* self, mocha_values* values)
 {
 	self->context = 0;
@@ -102,6 +110,38 @@ void mocha_runtime_pop_context(mocha_runtime* self)
 	self->context = self->contexts[self->stack_depth];
 }
 
+const mocha_boolean cached_function_same(const cached_function* cached, const mocha_list* l)
+{
+	for (int j = 0; j < cached->list.count; ++j) {
+		if (!mocha_object_equal(cached->list.objects[ j ], l->objects[ j ])) {
+			return mocha_false;
+		}
+	}
+
+	return mocha_true;
+}
+
+const struct mocha_object* find_cache(mocha_runtime* self, const mocha_list* l)
+{
+	for (int i = 0; i < cached_functions_count; ++i) {
+		const cached_function* c = &cached_functions[i];
+		if (cached_function_same(c, l)) {
+			return c->result;
+		}
+	}
+
+	return 0;
+}
+
+cached_function* add_to_cache(mocha_runtime* self, const mocha_object* result, const mocha_list* l)
+{
+	cached_function* f = &cached_functions[cached_functions_count++];
+	f->result = result;
+	mocha_list_init(&f->list, l->objects, l->count);
+
+	return f;
+}
+
 const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const struct mocha_object* o, mocha_error* error,
 												 mocha_boolean eval_symbols)
 {
@@ -112,9 +152,9 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 		}
 		const struct mocha_object* fn = mocha_runtime_eval(self, l->objects[0], error);
 		if (!fn || !mocha_object_is_invokable(fn)) {
-			MOCHA_ERR(mocha_error_code_not_invokable);
 			// MOCHA_LOG("Not invokable:");
 			// mocha_print_object_debug(l->objects[0]);
+			MOCHA_ERR(mocha_error_code_not_invokable);
 			return 0;
 		}
 		mocha_boolean should_evaluate_arguments = mocha_true;
@@ -137,7 +177,14 @@ const struct mocha_object* mocha_runtime_eval_ex(mocha_runtime* self, const stru
 			mocha_list_init(&new_args, converted_args, l->count);
 			l = &new_args;
 		}
-		o = mocha_runtime_invoke(self, self->context, fn, l);
+
+		o = find_cache(self, l);
+		if (!o) {
+			o = mocha_runtime_invoke(self, self->context, fn, l);
+			add_to_cache(self, o, l);
+		} else {
+		}
+
 		if (!o) {
 			mocha_print_object_debug(fn);
 		}

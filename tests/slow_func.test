@@ -1,0 +1,9 @@
+(defn slow-func [a] (dbg_sleep a)
+)
+
+(slow-func 2)
+(slow-func 2)
+(slow-func 2)
+(slow-func 2)
+---
+0

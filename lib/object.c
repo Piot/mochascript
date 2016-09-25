@@ -29,9 +29,9 @@ mocha_boolean mocha_object_equal(const mocha_object* a, const mocha_object* b)
 		case mocha_object_type_nil:
 			return mocha_true;
 		case mocha_object_type_function:
-			return mocha_false;
+			return a == b;
 		case mocha_object_type_internal_function:
-			return mocha_false;
+			return a == b;
 	}
 }
 

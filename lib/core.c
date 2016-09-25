@@ -6,6 +6,8 @@
 #include <mocha/print.h>
 #include <mocha/utils.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
 
 MOCHA_FUNCTION(dbg_ptr_func)
 {
@@ -13,6 +15,18 @@ MOCHA_FUNCTION(dbg_ptr_func)
 	const mocha_object* result = mocha_values_create_integer(runtime->values, (int) o);
 	return result;
 }
+
+MOCHA_FUNCTION(dbg_sleep_func)
+{
+	struct timespec requested, remaining;
+	const mocha_object* o = arguments->objects[1];
+	requested.tv_sec = mocha_object_integer(o);
+	requested.tv_nsec = 0;
+	nanosleep(&requested, &remaining);
+	const mocha_object* result = mocha_values_create_integer(runtime->values, 0);
+	return result;
+}
+
 
 MOCHA_FUNCTION(map_func)
 {
@@ -1034,4 +1048,5 @@ void mocha_core_define_context(mocha_context* context, mocha_values* values)
 
 	// DEBUG
 	MOCHA_DEF_FUNCTION(dbg_ptr, mocha_true);
+	MOCHA_DEF_FUNCTION(dbg_sleep, mocha_true);
 }
